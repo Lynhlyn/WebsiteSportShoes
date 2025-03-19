@@ -13,12 +13,17 @@ public class SanPhamChiTietResponse {
     private Integer id;
     private String maSPCT;
     private String tenSanPham;
+    private String tenDeGiay;
+    private String tenThuongHieu;
+    private String tenChatLieu;
+    private String tenDanhMuc;
     private String tenMau;
     private String tenKhuyenMai;
     private Float phanTramGiamGia;
     private LocalDateTime ngayBatDau;
     private LocalDateTime ngayKetThuc;
     private String tenSize;
+
     private Float giaBan;
     private Integer soLuong;
     private LocalDateTime ngayTao;

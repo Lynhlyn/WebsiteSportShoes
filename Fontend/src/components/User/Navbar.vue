@@ -13,198 +13,143 @@ const handleLogout = () => {
 </script>
 
 <template>
-    <div class="container py-3">
-        <div class="top-link d-none d-md-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-                <span class="fw-bold text-dark">Theo dõi:</span>
-                <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-youtube"></i></a>
-                <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
-            </div>
-            <div>
-                <div v-if="!loggedInUser" class="auth-links">
-                    <RouterLink to="/login" class="auth-link">Đăng nhập</RouterLink>
-                    <RouterLink to="/register" class="auth-link">Đăng ký</RouterLink>
-                </div>
-                <div v-else class="user-menu dropdown">
-                    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
-                        <img src="@/assets/logo/image.png" alt="User" class="user-avatar">
-                        <span>{{ loggedInUser }}</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <RouterLink to="/profile" class="dropdown-item">Tài khoản</RouterLink>
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm navbar-custom">
+        <div class="container">
+            <!-- Logo -->
+            <RouterLink class="navbar-brand" to="/">
+                <img src="@/assets/logo/logo.png" alt="Logo" height="70" />
+            </RouterLink>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <!-- Menu -->
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/">Trang chủ</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/about">Giới thiệu</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/stores">Hệ thống cửa hàng</RouterLink>
+                    </li>
+                    <li class="nav-item">
+                        <RouterLink class="nav-link" to="/new-arrivals">Hàng mới</RouterLink>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="brandDropdown" role="button"
+                            data-bs-toggle="dropdown">Thương hiệu</a>
+                        <ul class="dropdown-menu">
+                            <li><RouterLink class="dropdown-item" to="/brands/adidas">Giày ADIDAS</RouterLink></li>
+                            <li><RouterLink class="dropdown-item" to="/brands/converse">Giày CONVERSE</RouterLink></li>
+                            <li><RouterLink class="dropdown-item" to="/brands/jordan">Giày JORDAN</RouterLink></li>
+                            <li><RouterLink class="dropdown-item" to="/brands/nike">Giày NIKE</RouterLink></li>
+                            <li><RouterLink class="dropdown-item" to="/brands/on-running">Giày ON RUNNING</RouterLink></li>
+                            <li><RouterLink class="dropdown-item" to="/brands/puma">Giày PUMA</RouterLink></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Thanh tìm kiếm -->
+                <form class="d-flex me-3 search-bar">
+                    <input class="form-control" type="search" placeholder="Bạn muốn tìm gì?" />
+                    <button class="btn btn-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+
+                <!-- Tài khoản -->
+                <div class="dropdown me-3">
+                    <button class="btn btn-light dropdown-toggle account-btn" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li v-if="!loggedInUser">
+                            <RouterLink class="dropdown-item" to="/login">
+                                <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+                            </RouterLink>
                         </li>
-                        <li>
-                            <RouterLink to="/orders" class="dropdown-item">Đơn mua</RouterLink>
+                        <li v-if="!loggedInUser">
+                            <RouterLink class="dropdown-item" to="/register">
+                                <i class="bi bi-person-plus"></i> Đăng ký
+                            </RouterLink>
                         </li>
-                        <li>
-                            <hr class="dropdown-divider">
+                        <li v-if="loggedInUser">
+                            <button class="dropdown-item" @click="handleLogout">
+                                <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                            </button>
                         </li>
-                        <li><a href="#" class="dropdown-item text-danger" @click="handleLogout">Đăng xuất</a></li>
                     </ul>
                 </div>
+
+                <!-- Giỏ hàng -->
+                <RouterLink class="btn btn-outline-primary cart-btn" to="/cart">
+                    <i class="bi bi-cart"></i>
+                </RouterLink>
             </div>
         </div>
-
-        <div class="main-header rounded p-3 d-flex align-items-center justify-content-between">
-            <img src="@/assets/logo/logo.png" alt="Logo" class="logo-img">
-            <header class="bg-light py-2">
-                <div class="container-fluid">
-                    <!-- Thanh tìm kiếm nằm trên -->
-                    <!-- Điều chỉnh chiều rộng cột tìm kiếm -->
-                    <div class="row justify-content-center">
-                        <div class="col-md-12">
-                            <form class="search-form d-flex">
-                                <input type="text" placeholder="Tìm kiếm..." class="form-control me-2">
-                                <button class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Điều chỉnh navbar -->
-                    <nav class="navbar mt-3">
-                        <ul class="nav-list d-flex justify-content-center w-100">
-                            <li>
-                                <RouterLink to="/" class="nav-link">Trang chủ</RouterLink>
-                            </li>
-                            <li>
-                                <RouterLink to="/intro" class="nav-link">Giới thiệu</RouterLink>
-                            </li>
-                            <li>
-                                <RouterLink to="/products" class="nav-link">Sản phẩm</RouterLink>
-                            </li>
-                            <li>
-                                <RouterLink to="/news" class="nav-link">Tin tức</RouterLink>
-                            </li>
-                            <li>
-                                <RouterLink to="/contact" class="nav-link">Liên hệ</RouterLink>
-                            </li>
-                        </ul>
-                    </nav>
-
-                </div>
-            </header>
-            <div class="cart-icons d-flex">
-                <RouterLink to="/wishlist" class="icon-btn"><i class="bi bi-heart"></i></RouterLink>
-                <RouterLink to="/cart" class="icon-btn"><i class="bi bi-cart"></i></RouterLink>
-            </div>
-        </div>
-
-
-    </div>
+    </nav>
 </template>
 
 <style scoped>
-.container {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
+/* Navbar */
+.navbar-custom {
+  background-color: #f8dee0 !important; /* Màu hồng nhạt */
+  border-radius: 15px; /* Bo góc */
+  padding: 5px;
+}
+
+/* Menu Item */
+.navbar-nav .nav-link {
+    font-size: 17px;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #007bff;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.social-icon {
-    font-size: 20px;
-    margin: 0 10px;
-    color: #555;
-    transition: all 0.3s;
+.dropdown-item {
+    transition: background 0.3s;
 }
 
-.social-icon:hover {
-    color: #e6007e;
-    transform: scale(1.1);
+.dropdown-item:hover {
+    background: #f8f9fa;
 }
 
-.auth-link {
-    margin-right: 10px;
-    text-decoration: none;
-    font-weight: 500;
-    color: #333;
-    transition: color 0.3s;
-}
-
-.auth-link:hover {
-    color: #e6007e;
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid #ddd;
-}
-
-.logo-img {
-    width: 100px;
-}
-
-/* Mở rộng thanh tìm kiếm */
-.search-form {
-    flex-grow: 1;
-    max-width: 100%;
-    width: 100%;
-    display: flex;
-}
-
-.search-form input {
-    flex-grow: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px 0 0 8px;
-}
-
-.search-form button {
-    padding: 12px 16px;
-    border-radius: 0 8px 8px 0;
-}
-
-/* Mở rộng menu */
-.navbar {
-    width: 100%;
-    background-color: #f8f9fa;
-    padding: 10px 0;
+/* Tìm kiếm */
+.search-bar input {
     border-radius: 8px;
 }
 
-.nav-list {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    gap: 25px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.search-bar button {
+    border-radius: 8px;
 }
 
-.nav-list a {
-    padding: 10px 15px;
-    font-size: 18px;
-    font-weight: bold;
-    text-decoration: none;
-    color: #333;
-    transition: all 0.3s;
+/* Tài khoản */
+.account-btn {
+    font-size: 20px;
+    padding: 6px 8px;
+    border-radius: 50%;
+    transition: background 0.3s;
 }
 
-.nav-list a:hover {
-    color: #e6007e;
-    background: rgba(230, 0, 126, 0.1);
-    border-radius: 5px;
+.account-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
 }
 
-.cart-icons {
-    display: flex;
-    gap: 15px;
+/* Giỏ hàng */
+.cart-btn {
+    font-size: 20px;
+    padding: 6px 10px;
+    border-radius: 50%;
 }
-
-.icon-btn {
-    font-size: 24px;
-    color: #333;
-    transition: color 0.3s;
-}
-
-.icon-btn:hover {
-    color: #e6007e;
-}
-
 </style>

@@ -1,18 +1,14 @@
 package com.example.baskend.SanPham.QuanLySanPham.controller;
-
 import com.example.baskend.SanPham.QuanLySanPham.entity.*;
 import com.example.baskend.SanPham.QuanLySanPham.repository.*;
-import com.example.baskend.SanPham.QuanLySanPham.response.SanPhamResponse;
+import com.example.baskend.SanPham.QuanLySanPham.response.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,20 +21,20 @@ public class SanPhamController {
     private final ThuongHieuRepo thuongHieuRepo;
     private final ChatLieuRepo chatLieuRepo;
     private final DeGiayRepo deGiayRepo;
-
     private final AnhSanPhamRepo anhSanPhamRepo;
 
+    // Get the details of a product by ID
     @GetMapping("/{id}")
     public ResponseEntity<SanPhamResponse> getSanPhamById(@PathVariable Integer id) {
         Optional<SanPham> sanPhamOpt = sanPhamRepo.findById(id);
         if (sanPhamOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         SanPham sanPham = sanPhamOpt.get();
         return ResponseEntity.ok(mapSanPhamToResponse(sanPham));
     }
 
+    // Get all products (optional search functionality)
     @GetMapping("")
     public List<SanPhamResponse> getAllSanPham(@RequestParam(required = false) String keyword) {
         List<SanPham> sanPhams;
@@ -52,6 +48,7 @@ public class SanPhamController {
                 .collect(Collectors.toList());
     }
 
+    // Search for products based on a keyword
     @GetMapping("/search")
     public ResponseEntity<List<SanPhamResponse>> searchSanPham(@RequestParam(required = false) String keyword) {
         List<SanPhamResponse> result;
@@ -69,87 +66,67 @@ public class SanPhamController {
         return ResponseEntity.ok(result);
     }
 
+    // Add a new product
     @PostMapping("/addSP")
     public ResponseEntity<?> createSanPham(@Valid @RequestBody SanPham sanPham, @RequestParam List<String> urlAnh) {
-        // Kiểm tra danh sách ảnh hợp lệ
+        if (urlAnh == null || urlAnh.isEmpty()) {
+            return ResponseEntity.badRequest().body("Danh sách ảnh không được để trống!");
+        }
+
+        // Check if URLs are valid
         for (String url : urlAnh) {
             if (!url.matches("^(http|https)://.*$")) {
-                return ResponseEntity.badRequest().body("Ảnh sản phẩm phải là một URL hợp lệ bắt đầu bằng http hoặc https: " + url);
+                return ResponseEntity.badRequest().body("Ảnh sản phẩm phải là một URL hợp lệ: " + url);
             }
         }
-
-        // Lưu sản phẩm vào database
-        SanPham savedSanPham = sanPhamRepo.save(sanPham);
-
-        // Lưu ảnh vào database
-        List<AnhSanPham> anhSanPhamList = new ArrayList<>();
-        for (String url : urlAnh) {
-            AnhSanPham anhSanPham = new AnhSanPham();
-            anhSanPham.setSanPham(savedSanPham);
-            anhSanPham.setAnhSP(url);
-            anhSanPhamRepo.save(anhSanPham);
-            anhSanPhamList.add(anhSanPham);
-        }
-
-        // Tạo danh sách ảnh trả về
-        List<String> danhSachAnh = anhSanPhamList.stream()
-                .map(AnhSanPham::getAnhSP)
-                .collect(Collectors.toList());
-
-        // Lấy ảnh đầu tiên nếu có ảnh, ngược lại để giá trị null
-        String anhDauTien = !danhSachAnh.isEmpty() ? danhSachAnh.get(0) : null;
-
-        // Trả về SanPhamResponse
-        SanPhamResponse response = new SanPhamResponse(
-                savedSanPham.getId(),
-                savedSanPham.getTenSanPham(),
-                savedSanPham.getMoTa(),
-                savedSanPham.getDanhMuc().getTenDanhMuc(),
-                savedSanPham.getThuongHieu().getTenThuongHieu(),
-                savedSanPham.getChatLieu().getTenChatLieu(),
-                savedSanPham.getDeGiay().getTenDeGiay(),
-                savedSanPham.getNgayTao(),
-                savedSanPham.getNgaySua(),
-                savedSanPham.getTrangThai(),
-                danhSachAnh,
-                anhDauTien // Truyền ảnh đầu tiên
-        );
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/anh-san-pham/{id}")
-    public ResponseEntity<String> getAnhSanPham(@PathVariable Integer id) {
-        List<AnhSanPham> anhSanPhamList = anhSanPhamRepo.findBySanPhamId(id);
-
-        if (!anhSanPhamList.isEmpty()) {
-            String urlAnh = anhSanPhamList.get(0).getAnhSP(); // Lấy ảnh đầu tiên
-            if (urlAnh != null && !urlAnh.isEmpty()) {
-                return ResponseEntity.ok(urlAnh);
-            }
-        }
-        return ResponseEntity.ok("https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg"); // Ảnh mặc định nếu không có ảnh
-    }
-
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteSanPham(@PathVariable Integer id) {
-        if (!sanPhamRepo.existsById(id)) {
-            return ResponseEntity.badRequest().body("Sản phẩm không tồn tại!");
-        }
-
-        // Xoá ảnh trước khi xoá sản phẩm
-        anhSanPhamRepo.deleteBySanPhamId(id);
 
         try {
-            sanPhamRepo.deleteById(id);
-            return ResponseEntity.ok("Xoá sản phẩm thành công!");
+            // Save the product
+            SanPham savedSanPham = sanPhamRepo.save(sanPham);
+
+            // Save images for the product
+            List<AnhSanPham> anhSanPhamList = new ArrayList<>();
+            for (String url : urlAnh) {
+                AnhSanPham anhSanPham = new AnhSanPham();
+                anhSanPham.setSanPham(savedSanPham);
+                anhSanPham.setAnhSP(url);
+                anhSanPhamRepo.save(anhSanPham);
+                anhSanPhamList.add(anhSanPham);
+            }
+
+            // Get list of image URLs
+            List<String> danhSachAnh = anhSanPhamList.stream()
+                    .map(AnhSanPham::getAnhSP)
+                    .collect(Collectors.toList());
+
+            // Set the first image as the main image
+            String anhDauTien = !danhSachAnh.isEmpty() ? danhSachAnh.get(0) : null;
+
+            // Return product response
+            SanPhamResponse response = new SanPhamResponse(
+                    savedSanPham.getId(),
+                    savedSanPham.getTenSanPham(),
+                    savedSanPham.getMoTa(),
+                    savedSanPham.getDanhMuc().getTenDanhMuc(),
+                    savedSanPham.getThuongHieu().getTenThuongHieu(),
+                    savedSanPham.getChatLieu().getTenChatLieu(),
+                    savedSanPham.getDeGiay().getTenDeGiay(),
+                    savedSanPham.getNgayTao(),
+                    savedSanPham.getNgaySua(),
+                    savedSanPham.getTrangThai(),
+                    danhSachAnh,
+                    anhDauTien
+            );
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Lỗi khi xoá sản phẩm: " + e.getMessage());
+                    .body("Lỗi khi thêm sản phẩm: " + e.getMessage());
         }
     }
 
+    // Update an existing product
     @PutMapping("/{id}")
     public ResponseEntity<?> updateSanPham(@PathVariable Integer id, @Valid @RequestBody SanPham sanPham, @RequestParam List<String> urlAnh) {
         Optional<SanPham> existingSanPhamOpt = sanPhamRepo.findById(id);
@@ -189,9 +166,29 @@ public class SanPhamController {
         return ResponseEntity.ok("Cập nhật sản phẩm thành công!");
     }
 
+    // Delete a product
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteSanPham(@PathVariable Integer id) {
+        if (!sanPhamRepo.existsById(id)) {
+            return ResponseEntity.badRequest().body("Sản phẩm không tồn tại!");
+        }
+
+        // Delete related images before deleting the product
+        anhSanPhamRepo.deleteBySanPhamId(id);
+
+        try {
+            sanPhamRepo.deleteById(id);
+            return ResponseEntity.ok("Xoá sản phẩm thành công!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi xoá sản phẩm: " + e.getMessage());
+        }
+    }
+
+    // Filter products based on various criteria
     @GetMapping("/filter")
     public List<SanPhamResponse> filterSanPham(
-            @RequestParam(required = false) String trangThai, // Nhận dưới dạng chuỗi
+            @RequestParam(required = false) String trangThai,
             @RequestParam(required = false) String tenThuongHieu,
             @RequestParam(required = false) String tenDanhMuc,
             @RequestParam(required = false) String tenChatLieu,
@@ -235,33 +232,43 @@ public class SanPhamController {
                 .collect(Collectors.toList());
     }
 
+    // Update the product response mapping
     private SanPhamResponse mapSanPhamToResponse(SanPham sanPham) {
-        // Lấy danh sách ảnh từ bảng AnhSanPham
+        // Get the list of images for the product
         List<AnhSanPham> anhSanPhamList = anhSanPhamRepo.findBySanPhamId(sanPham.getId());
-
-        // Nếu có ảnh, lấy danh sách và ảnh đầu tiên, nếu không có thì đặt ảnh mặc định
         List<String> danhSachAnh = anhSanPhamList.isEmpty()
-                ? List.of("https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg") // Ảnh mặc định
-                : anhSanPhamList.stream().map(AnhSanPham::getAnhSP).toList(); // Lấy tất cả ảnh
+                ? List.of("https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg") // Default image
+                : anhSanPhamList.stream().map(AnhSanPham::getAnhSP).collect(Collectors.toList());
+        String anhDauTien = danhSachAnh.get(0); // First image as the main image
 
-        String anhDauTien = danhSachAnh.get(0); // Ảnh đầu tiên
+        // Fetch related entities directly from the SanPham entity
+        String danhMuc = sanPham.getDanhMuc() != null ? sanPham.getDanhMuc().getTenDanhMuc() : "N/A";
+        String thuongHieu = sanPham.getThuongHieu() != null ? sanPham.getThuongHieu().getTenThuongHieu() : "N/A";
+        String chatLieu = sanPham.getChatLieu() != null ? sanPham.getChatLieu().getTenChatLieu() : "N/A";
+        String deGiay = sanPham.getDeGiay() != null ? sanPham.getDeGiay().getTenDeGiay() : "N/A";
 
+        // Create and return the SanPhamResponse object
         return new SanPhamResponse(
                 sanPham.getId(),
                 sanPham.getTenSanPham(),
                 sanPham.getMoTa(),
-                sanPham.getDanhMuc() != null ? sanPham.getDanhMuc().getTenDanhMuc() : "Không có",
-                sanPham.getThuongHieu() != null ? sanPham.getThuongHieu().getTenThuongHieu() : "Không có",
-                sanPham.getChatLieu() != null ? sanPham.getChatLieu().getTenChatLieu() : "Không có",
-                sanPham.getDeGiay() != null ? sanPham.getDeGiay().getTenDeGiay() : "Không có",
+                danhMuc,  // Use the actual category name
+                thuongHieu,  // Use the actual brand name
+                chatLieu,  // Use the actual material name
+                deGiay,  // Use the actual sole name
                 sanPham.getNgayTao(),
                 sanPham.getNgaySua(),
                 sanPham.getTrangThai(),
                 danhSachAnh,
-                anhDauTien // Thêm ảnh đầu tiên vào response
+                anhDauTien
         );
     }
 
+
+
+
+
+    // Get the list of categories, brands, materials, and soles
     @GetMapping("/danh-muc")
     public List<DanhMuc> getAllDanhMuc() {
         return danhMucRepo.findAll();
@@ -281,5 +288,4 @@ public class SanPhamController {
     public List<DeGiay> getAllDeGiay() {
         return deGiayRepo.findAll();
     }
-
 }

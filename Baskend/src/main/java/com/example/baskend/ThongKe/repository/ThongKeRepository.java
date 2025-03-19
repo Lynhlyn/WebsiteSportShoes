@@ -1,7 +1,7 @@
 package com.example.baskend.ThongKe.repository;
 
 
-import com.example.baskend.ThongKe.entity.DonHang;
+import com.example.baskend.DonHang.entity.DonHang;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

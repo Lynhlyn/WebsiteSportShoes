@@ -1,7 +1,7 @@
 package com.example.baskend.SanPham.SanPhamChiTiet.entity;
 
 import com.example.baskend.SanPham.KhuyenMai.entity.KhuyenMai;
-import com.example.baskend.SanPham.QuanLySanPham.entity.*;
+import com.example.baskend.SanPham.QuanLySanPham.entity.SanPham;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DanhMucRepo extends JpaRepository<DanhMuc, Integer> {
+    DanhMuc findByTenDanhMuc(String tenDanhMuc);
 }

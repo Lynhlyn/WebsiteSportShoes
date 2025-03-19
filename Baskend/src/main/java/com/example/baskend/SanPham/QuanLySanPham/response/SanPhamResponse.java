@@ -23,4 +23,8 @@ public class SanPhamResponse {
     private boolean trangThai;
     private List<String> danhSachAnh; // Đổi tên trường để rõ ràng hơn
     private String anhDauTien;
-}
+
+
+    }
+
+

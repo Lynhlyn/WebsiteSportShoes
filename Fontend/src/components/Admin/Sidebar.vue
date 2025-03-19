@@ -43,11 +43,6 @@ const toggleMenu = (menu) => {
 
         <!-- Sidebar menu -->
         <div class="list-group">
-            <!-- Trang chủ -->
-             <!-- Trang Chủ -->
-            <RouterLink to="/" class="menu-item" :class="{ active: isActive('/') }">
-                <i class="bi bi-house-door me-2"></i> Trang Chủ
-            </RouterLink>
             <!-- Bán hàng -->
             <div class="menu-group">
                 <button class="menu-toggle" @click="toggleMenu('sales')">
@@ -86,6 +81,21 @@ const toggleMenu = (menu) => {
                     </RouterLink>
                     <RouterLink to="/admin/products/details" class="menu-item" :class="{ active: isActive('/admin/products/details') }">
                         <i class="bi bi-list-task me-2"></i> Sản phẩm chi tiết
+                    </RouterLink>
+                    <RouterLink to="/admin/products/promotions" class="menu-item" :class="{ active: isActive('/admin/products/promotions') }">
+                        <i class="bi bi-gift me-2"></i> Khuyến mại
+                    </RouterLink>
+                    <RouterLink to="/admin/products/categories" class="menu-item" :class="{ active: isActive('/admin/products/categories') }">
+                        <i class="bi bi-gift me-2"></i> Danh mục
+                    </RouterLink>
+                    <RouterLink to="/admin/products/de_giay" class="menu-item" :class="{ active: isActive('/admin/products/de_giay') }">
+                        <i class="bi bi-gift me-2"></i> Đế giày
+                    </RouterLink>
+                    <RouterLink to="/admin/products/thuong_hieu" class="menu-item" :class="{ active: isActive('/admin/products/thuong_hieu') }">
+                        <i class="bi bi-gift me-2"></i> Thương hiệu
+                    </RouterLink>
+                    <RouterLink to="/admin/products/chat_lieu" class="menu-item" :class="{ active: isActive('/admin/products/chat_lieu') }">
+                        <i class="bi bi-gift me-2"></i> Chất liệu
                     </RouterLink>
                 </div>
             </div>

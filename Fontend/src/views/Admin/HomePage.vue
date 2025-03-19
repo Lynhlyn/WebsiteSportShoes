@@ -7,9 +7,6 @@ import Sidebar from '@/components/Admin/Sidebar.vue';
 import Header from '@/components/Admin/Header.vue';
 import Footer from '@/components/Admin/Footer.vue';
 
-// Import hình ảnh
-import backgroundImage from '@/assets/logo/anhnen.jpg';
-
 // Reactive title header
 const route = useRoute();
 const titleHeader = ref("Admin");
@@ -17,6 +14,7 @@ const titleHeader = ref("Admin");
 // Update title dynamically
 watchEffect(() => {
   switch (route.name) {
+    // Bán hàng
     case 'sales-online':
       titleHeader.value = 'Bán hàng - Online';
       document.title = 'Bán hàng Online';
@@ -25,10 +23,14 @@ watchEffect(() => {
       titleHeader.value = 'Bán hàng - Offline';
       document.title = 'Bán hàng Offline';
       break;
+
+    // Thống kê
     case 'stats':
       titleHeader.value = 'Thống kê';
       document.title = 'Xem thống kê';
       break;
+
+    // Sản phẩm
     case 'products-manage':
       titleHeader.value = 'Quản lý sản phẩm';
       document.title = 'Quản lý sản phẩm';
@@ -45,6 +47,7 @@ watchEffect(() => {
       titleHeader.value = 'Quản lý khuyến mại sản phẩm';
       document.title = 'Quản lý khuyến mại sản phẩm';
       break;
+
     case 'vouchers':
       titleHeader.value = 'Voucher';
       document.title = 'Quản lý voucher';
@@ -65,12 +68,14 @@ watchEffect(() => {
       titleHeader.value = 'Chat';
       document.title = 'Chat hỗ trợ';
       break;
+
     default:
       titleHeader.value = 'SportShoes';
       document.title = 'SportShoes';
   }
 });
 </script>
+
 <template>
   <div class="wrapper">
     <!-- Sidebar -->
@@ -83,10 +88,6 @@ watchEffect(() => {
       <!-- Content -->
       <div class="content">
         <RouterView />
-        <!-- Hiển thị ảnh -->
-        <div class="image-container">
-          <img :src="backgroundImage" alt="Ảnh nền" class="background-image" />
-        </div>
       </div>
 
       <!-- Footer -->
@@ -94,6 +95,7 @@ watchEffect(() => {
     </div>
   </div>
 </template>
+
 <style scoped>
 /* Bố cục chính */
 .wrapper {
@@ -135,19 +137,6 @@ watchEffect(() => {
   background: #ffffff;
   border-radius: 10px;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Hiển thị ảnh */
-.image-container {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.background-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Footer */

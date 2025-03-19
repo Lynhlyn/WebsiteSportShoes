@@ -1,171 +1,79 @@
+<script setup>
+import { RouterLink } from 'vue-router';
+</script>
+
 <template>
-      <footer class="footer">
+      <footer class="footer mt-4 pt-4 border-top bg-light">
             <div class="container">
-                  <div class="row">
-                        <div class="col-sm-12 col-md-6 col-lg-3">
-                              <img src="@/assets/logo/logo.png" alt="" width="100px" height="100px"
-                                    class="footer-logo" />
-                              <ul class="footer__list">
-                                    <li class="footer__item" v-for="(item, index) in contactInfo" :key="index">
-                                          <p>
-                                                <i :class="item.icon" class="footer__item-icon"></i> {{ item.label }}:
-                                                <a v-if="item.link" :href="item.link">{{ item.value }}</a>
-                                                <span v-else>{{ item.value }}</span>
-                                          </p>
-                                    </li>
-                                    <li class="social-icons">
-                                          <a v-for="(icon, index) in socialIcons" :key="index" :href="icon.link"
-                                                class="social-link">
-                                                <i :class="icon.class"></i>
-                                          </a>
-                                    </li>
+                  <div class="row text-center text-md-start">
+                        <!-- Cột 1: Thông tin công ty -->
+                        <div class="col-md-3 mb-3">
+                              <h5 class="fw-bold text-primary">Thông tin công ty</h5>
+                              <p class="mb-1"><i class="fas fa-building me-2 text-secondary"></i> Công ty TNHH
+                                    SportShoes Việt Nam</p>
+                              <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-danger"></i> Tầng 6, Tòa
+                                    Friendship, Số 3, Phố Huế, Hà Nội</p>
+                              <p class="mb-1"><i class="fas fa-envelope me-2 text-warning"></i> linhcanthimy@gmail.com
+                              </p>
+                              <p><i class="fas fa-phone me-2 text-success"></i> 03456245672</p>
+                        </div>
+
+                        <!-- Cột 2: Chính sách -->
+                        <div class="col-md-3 mb-3">
+                              <h5 class="fw-bold text-primary">Chính sách</h5>
+                              <ul class="list-unstyled">
+                                    <li><RouterLink to="/chinh-sach-van-chuyen" class="policy-link">Chính sách vận chuyển</RouterLink></li>
+                                    <li><RouterLink to="/chinh-sach-doi-tra" class="policy-link">Chính sách đổi trả</RouterLink></li>
+                                    <li><RouterLink to="/chinh-sach-bao-mat" class="policy-link">Chính sách bảo mật</RouterLink></li>
+                                    <li><RouterLink to="/chinh-sach-kiem-hang" class="policy-link">Chính sách kiểm hàng</RouterLink></li>
+                                    <li><RouterLink to="/nghia-vu-nguoi-ban-va-khach-hang" class="policy-link">Nghĩa vụ của người bán và khách hàng</RouterLink></li>
                               </ul>
                         </div>
 
-                        <div class="col-sm-12 col-md-6 col-lg-3" v-for="(section, idx) in footerSections" :key="idx">
-                              <div @click="toggleSection(idx)" class="footer-section">
-                                    <h3 class="footer__heading">{{ section.title }}</h3>
-                                    <i class="bi bi-chevron-down"></i>
+                        <!-- Cột 3: Hỗ trợ khách hàng & Mạng xã hội -->
+                        <div class="col-md-3">
+                              <h5 class="fw-bold text-primary">Hỗ trợ khách hàng</h5>
+                              <div class="d-flex flex-column">
+                                    <RouterLink to="/gioi-thieu" class="support-link">Giới thiệu</RouterLink>
+                                    <RouterLink to="/ho-tro-khach-hang" class="support-link">Quy định chung</RouterLink>
+                                    <RouterLink to="/he-thong-cua-hang" class="support-link">Hệ thống cửa hàng</RouterLink>
+                                    <RouterLink to="/kiem-tra-don-hang" class="support-link">Kiểm tra đơn hàng</RouterLink>
                               </div>
-                              <ul class="footer__list" v-show="section.expanded">
-                                    <li class="footer__item" v-for="(link, i) in section.links" :key="i">
-                                          <router-link :to="link.href" class="footer__item--link">{{ link.text
-                                                }}</router-link>
-                                    </li>
-                              </ul>
+                        </div>
+
+                        <!-- Logo Bộ Công Thương -->
+                        <div class="col-md-3">
+                              <img src="@/assets/footer/bocongthuong.webp" alt="Bộ Công Thương"
+                                    class="logo mb-2 text-center" width="120" />
+                              <div class="d-flex flex-column gap-1">
+                                    <span class="fw-medium fs-5">Công ty TNHH SportShoes Việt Nam</span>
+                                    <span class="fw-light">Tầng 6, Tòa
+                                          Friendship, Số 3, Phố Huế, Hà Nội</span>
+                              </div>
                         </div>
                   </div>
-            </div>
-            <div class="footer__bottom">
-                  <p class="footer__text">© Bản quyền thuộc về SportShoes</p>
             </div>
       </footer>
 </template>
 
-<script>
-export default {
-      data() {
-            return {
-                  contactInfo: [
-                        { icon: 'bi bi-geo-alt', label: 'Địa chỉ', value: 'Ho Chi Minh, Viet Nam' },
-                        { icon: 'bi bi-telephone', label: 'Phone', value: '0123456789', link: 'tel:0123456789' },
-                        { icon: 'bi bi-envelope', label: 'Email', value: 'abc@gmail.com', link: 'mailto:abc@gmail.com' }
-                  ],
-                  socialIcons: [
-                        { class: 'bi bi-facebook', link: '#' },
-                        { class: 'bi bi-instagram', link: '#' },
-                        { class: 'bi bi-youtube', link: '#' },
-                        { class: 'bi bi-twitter', link: '#' }
-                  ],
-                  footerSections: [
-                        {
-                              title: 'Thông tin của chúng tôi',
-                              expanded: true,
-                              links: [
-                                    { text: 'Cơ sở 1: 26 Đường D1, P12, Quận Tân Bình, TP.HCM', href: '/' },
-                                    { text: 'Cơ sở 2: 86 Đinh Bộ Lĩnh, P10, Quận Bình Thanh, TP.HCM', href: '/' },
-                                    { text: 'Lĩnh vực kinh doanh', href: '/' }
-                              ]
-                        },
-                        {
-                              title: 'Chính sách',
-                              expanded: true,
-                              links: [
-                                    { text: 'Chính sách bảo hành', href: '/' },
-                                    { text: 'Chính sách đổi trả', href: '/' },
-                                    { text: 'Chính sách thanh toán', href: '/' },
-                                    { text: 'Chính sách giao nhận hàng', href: '/' },
-                                    { text: 'Chính sách bảo mật', href: '/' }
-                              ]
-                        },
-                        {
-                              title: 'Hỗ trợ chung',
-                              expanded: true,
-                              links: [
-                                    { text: 'Trang chủ', href: '/' },
-                                    { text: 'Giới thiệu', href: '/intro' },
-                                    { text: 'Sản phẩm', href: '/product' },
-                                    { text: 'Tin tức', href: '/news' },
-                                    { text: 'Liên hệ', href: '/contact' }
-                              ]
-                        }
-                  ]
-            };
-      },
-      methods: {
-            toggleSection(index) {
-                  this.footerSections[index].expanded = !this.footerSections[index].expanded;
-            }
-      }
-};
-</script>
-
 <style scoped>
-.footer {
-      background: #f8f9fa;
-      padding: 20px 0;
-}
-
-.footer-logo {
-      border-radius: 50%;
-      border: 3px solid #000;
-      margin-bottom: 20px;
-}
-
-.footer__bottom {
-      text-align: center;
-      margin-top: 10px;
-      padding: 10px 0;
-      background: #ddd;
-}
-
-.footer__heading {
-      font-size: 18px;
-      font-weight: bold;
-}
-
-.footer__list {
-      list-style: none;
-      padding: 0;
-}
-
-.footer__item {
-      margin-bottom: 5px;
-}
-
-.footer__item--link {
+/* Hiệu ứng chung cho liên kết */
+.footer a {
+      color: #555;
       text-decoration: none;
-      color: #333;
-      transition: color 0.3s;
+      transition: color 0.3s, transform 0.2s;
+      display: inline-block;
 }
 
-.footer__item--link:hover {
+/* Hiệu ứng hover cho Chính sách */
+.policy-link:hover {
       color: #007bff;
+      transform: translateX(5px);
 }
 
-.footer__item-icon {
-      margin-right: 5px;
-}
-
-.footer-section {
-      display: flex;
-      justify-content: space-between;
-      cursor: pointer;
-      margin-bottom: 8px;
-}
-
-.social-icons {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-}
-
-.social-link {
-      font-size: 24px;
-      transition: transform 0.3s;
-}
-
-.social-link:hover {
-      transform: scale(1.1);
+/* Hiệu ứng hover cho Hỗ trợ khách hàng */
+.support-link:hover {
+      color: #28a745;
+      transform: translateY(-2px);
 }
 </style>
