@@ -78,4 +78,12 @@ public class SanPhamChiTiet {
     protected void onUpdate() {
         this.ngaySua = LocalDateTime.now();
     }
+
+    public String getTenMau() {
+        return mauSac != null ? mauSac.getTenMau() : "Không xác định";
+    }
+
+    public String getTenSize() {
+        return size != null ? size.getTenSize() : "Không xác định";
+    }
 }

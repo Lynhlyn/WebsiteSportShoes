@@ -16,6 +16,12 @@ const router = createRouter({
           name: 'sales-offline',
           component: () => import('../views/Admin/Sales/OfflineSales.vue'),
         },
+        // {
+        //   path: 'sales/customer',
+        //   name: 'sales-customer',
+        //   component: () => import('../views/Admin/Sales/AddCustomer.vue'),
+        // },
+
         {
           path: 'sales/online',
           name: 'sales-online',
@@ -172,8 +178,8 @@ const router = createRouter({
           component: () => import('../views/User/SanPham/Cart.vue'),
         },
         {
-          path: 'thanh-toan',
-          name: 'y',
+          path: '/thanh-toan',
+          name: 'thanh-toan',
           component: () => import('../views/User/SanPham/Checkout.vue'),
           props:true
         },

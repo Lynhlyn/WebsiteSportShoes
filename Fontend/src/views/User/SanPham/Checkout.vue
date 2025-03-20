@@ -164,7 +164,6 @@ const datHang = () => {
         return;
     }
 
-    // Xử lý logic đặt hàng (gửi lên API hoặc lưu vào localStorage)
     alert("Đặt hàng thành công!");
     localStorage.removeItem("gioHang"); // Xóa giỏ hàng sau khi đặt hàng
     router.push("/"); // Chuyển hướng về trang chủ hoặc trang xác nhận đơn hàng
@@ -206,8 +205,8 @@ onMounted(() => {
                             <img :src="item.hinhAnh" class="img-thumbnail" width="80" height="80">
                         </td>
                         <td>{{ item.tenSanPham }}</td>
-                        <td>{{ item.mauSac }}</td>
-                        <td>{{ item.size }}</td>
+                        <td>{{ item.mauSac.tenMau }}</td> <!-- Hiển thị màu sắc -->
+                        <td>{{ item.size.tenSize }}</td> <!-- Hiển thị kích thước -->
                         <td>{{ item.soLuong }}</td>
                         <td>{{ formatVND(item.giaGiam) }}</td>
                         <td>{{ formatVND(item.giaGiam * item.soLuong) }}</td>

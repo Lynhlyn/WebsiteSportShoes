@@ -44,13 +44,18 @@ const themVaoGioHang = () => {
     }
 
     const gioHang = JSON.parse(localStorage.getItem("gioHang")) || [];
+    
+    // Lấy thông tin chi tiết màu sắc và kích thước
+    const mauSac = sanPhamChiTiet.value.danhSachMauSac.find(m => m.id === selectedMauSac.value);
+    const size = sanPhamChiTiet.value.danhSachSize.find(s => s.id === selectedSize.value);
+
     const sanPham = {
         id: sanPhamChiTiet.value.id,
         tenSanPham: sanPhamChiTiet.value.tenSanPham,
         giaGiam: sanPhamChiTiet.value.giaGiam,
         soLuong: soLuongMua.value,
-        mauSac: selectedMauSac.value,
-        size: selectedSize.value,
+        mauSac: { id: mauSac.id, tenMau: mauSac.tenMau },
+        size: { id: size.id, tenSize: size.tenSize },
         thuongHieu: sanPhamChiTiet.value.thuongHieu,
         danhMuc: sanPhamChiTiet.value.danhMuc,
         hinhAnh: sanPhamChiTiet.value.hinhAnh
@@ -58,31 +63,20 @@ const themVaoGioHang = () => {
 
     // Kiểm tra sản phẩm đã tồn tại trong giỏ hàng chưa
     const index = gioHang.findIndex(item =>
-        item.tenSanPham === sanPham.tenSanPham &&
-        item.mauSac === sanPham.mauSac &&
-        item.size === sanPham.size &&
-        item.thuongHieu === sanPham.thuongHieu &&
-        item.danhMuc === sanPham.danhMuc
+        item.id === sanPham.id &&
+        item.mauSac.id === sanPham.mauSac.id &&
+        item.size.id === sanPham.size.id
     );
 
     if (index !== -1) {
-        // Nếu sản phẩm đã có, tăng số lượng
         gioHang[index].soLuong += sanPham.soLuong;
-        console.log(`Cập nhật số lượng sản phẩm: ${gioHang[index].soLuong}`);
     } else {
-        // Nếu sản phẩm chưa có, thêm mới vào giỏ hàng
         gioHang.push(sanPham);
-        console.log(`Thêm sản phẩm mới vào giỏ hàng: ${sanPham.tenSanPham}`);
     }
 
-    // Lưu giỏ hàng vào localStorage
     localStorage.setItem("gioHang", JSON.stringify(gioHang));
-
-    // Chuyển hướng đến trang giỏ hàng
     router.push("/giohang");
 };
-
-
 
 const muaNgay = () => {
     if (!selectedMauSac.value || !selectedSize.value) {

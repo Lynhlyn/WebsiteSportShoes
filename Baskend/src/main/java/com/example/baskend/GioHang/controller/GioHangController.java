@@ -28,7 +28,6 @@ public class GioHangController {
         List<GioHang> cartItems = gioHangRepo.findByKhachHangId(khachHangId);
         return ResponseEntity.ok(cartItems);
     }
-
     // Thêm sản phẩm vào giỏ hàng
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@RequestParam Integer khachHangId, @RequestParam Integer sanPhamChiTietId, @RequestParam Integer soLuong) {

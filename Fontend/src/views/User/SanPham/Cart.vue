@@ -16,46 +16,6 @@ const saveGioHang = () => {
     localStorage.setItem("gioHang", JSON.stringify(gioHang.value));
 };
 
-// Thêm sản phẩm vào giỏ hàng với thông tin màu sắc và size từ API
-const themVaoGioHang = async (id) => {
-    try {
-        const response = await axios.get(`http://localhost:8080/san-pham-chi-tiet/san-pham/${id}`);
-        const sanPhamChiTiet = response.data;
-
-        if (!sanPhamChiTiet || !sanPhamChiTiet.tenSanPham || !sanPhamChiTiet.giaGiam) {
-            console.error("Sản phẩm không hợp lệ");
-            return;
-        }
-
-        const sanPham = {
-            id: sanPhamChiTiet.id,
-            tenSanPham: sanPhamChiTiet.tenSanPham,
-            mauSac: sanPhamChiTiet.mauSac.tenMau, // Lấy tên màu từ API
-            size: sanPhamChiTiet.size.tenSize, // Lấy tên size từ API
-            soLuong: 1, // Mặc định thêm 1 sản phẩm
-            giaGiam: sanPhamChiTiet.giaGiam,
-            hinhAnh: sanPhamChiTiet.hinhAnh,
-        };
-
-        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
-        const index = gioHang.value.findIndex(item =>
-            item.id === sanPham.id &&
-            item.mauSac === sanPham.mauSac &&
-            item.size === sanPham.size
-        );
-
-        if (index !== -1) {
-            gioHang.value[index].soLuong++;
-        } else {
-            gioHang.value.push(sanPham);
-        }
-
-        saveGioHang();
-    } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu sản phẩm:", error);
-    }
-};
-
 // Tăng số lượng sản phẩm
 const tangSoLuong = (index) => {
     if (index >= 0 && index < gioHang.value.length) {
@@ -88,11 +48,6 @@ const tongTienFormatted = computed(() => {
     return new Intl.NumberFormat("vi-VN").format(total) + " đ";
 });
 
-// Chuyển đến trang thanh toán
-const diDenThanhToan = () => {
-    router.push("/thanh-toan");
-};
-
 onMounted(loadGioHang);
 </script>
 
@@ -122,8 +77,8 @@ onMounted(loadGioHang);
                             <img :src="item.hinhAnh" class="img-thumbnail" width="80" height="80">
                         </td>
                         <td>{{ item.tenSanPham }}</td>
-                        <td>{{ item.mauSac }}</td>
-                        <td>{{ item.size }}</td>
+                        <td>{{ item.mauSac.tenMau }}</td>
+                        <td>{{ item.size.tenSize }}</td>
                         <td>
                             <button class="btn btn-outline-secondary" @click="giamSoLuong(index)">-</button>
                             <span class="mx-2">{{ item.soLuong }}</span>
