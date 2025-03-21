@@ -28,12 +28,36 @@ const layDanhSachVoucher = async () => {
             id: v.id,
             maVoucher: v.maVoucher,
             moTa: v.moTa,
-            giaTriGiam: v.giaTriGiam || 0, // Giảm giá theo % hoặc giá trị cố định
-            giaTriToiThieu: v.giaTriToiThieu || 0, // Điều kiện tối thiểu để áp dụng voucher
-            loaiVoucher: v.loaiVoucher || 1 // 1: Giảm theo số tiền, 0: Giảm theo phần trăm
+            giaTriGiam: v.giaTriGiam || 0,
+            giaTriToiThieu: v.giaTriToiThieu || 0,
+            loaiVoucher: v.loaiVoucher || 1,
+            giaTriGiamToiDa: v.loaiVoucher === 0 
+                ? (v.giaTriToiThieu * v.giaTriGiam) / 100 
+                : v.giaTriGiam
         }));
     } catch (error) {
         console.error("Lỗi khi tải danh sách voucher:", error);
+    }
+};
+
+const apDungVoucher = () => {
+    if (!selectedVoucher.value) {
+        giamGia.value = 0;
+        return;
+    }
+
+    const voucher = danhSachVoucher.value.find(v => v.id === selectedVoucher.value);
+    if (!voucher) return;
+
+    // Tổng tiền trước giảm giá
+    const tongTien = tongTienTruocGiam.value;
+
+    if (voucher.loaiVoucher === 0) {
+        // Nếu voucher là %, tính theo phần trăm nhưng không vượt quá giaTriGiamToiDa
+        giamGia.value = Math.min((tongTien * voucher.giaTriGiam) / 100, voucher.giaTriGiamToiDa);
+    } else {
+        // Nếu voucher là số tiền cố định, giảm trực tiếp
+        giamGia.value = voucher.giaTriGiam;
     }
 };
 
@@ -41,21 +65,6 @@ const layDanhSachVoucher = async () => {
 const tongTienTruocGiam = computed(() => {
     return gioHang.value.reduce((acc, item) => acc + item.giaGiam * item.soLuong, 0);
 });
-
-// Cập nhật tổng tiền sau khi chọn voucher
-const apDungVoucher = () => {
-    giamGia.value = 0; // Reset giảm giá
-    if (!selectedVoucher.value) return;
-
-    const voucher = danhSachVoucher.value.find(v => v.id === selectedVoucher.value);
-    if (!voucher || tongTienTruocGiam.value < voucher.giaTriToiThieu) return;
-
-    if (voucher.loaiVoucher === 0) { // Giảm theo phần trăm
-        giamGia.value = Math.min(voucher.giaTriToiThieu * (voucher.giaTriGiam / 100), tongTienTruocGiam.value);
-    } else if (voucher.loaiVoucher === 1) { // Giảm theo số tiền
-        giamGia.value = Math.min(voucher.giaTriGiam, tongTienTruocGiam.value);
-    }
-};
 
 // Tính tổng tiền sau giảm
 const tongTienSauGiam = computed(() => {
@@ -222,17 +231,10 @@ onMounted(() => {
                 <select class="form-control" v-model="selectedVoucher" @change="apDungVoucher">
                     <option value="">-- Chọn voucher --</option>
                     <option v-for="voucher in danhSachVoucher" :key="voucher.id" :value="voucher.id">
-                        {{ voucher.maVoucher }} -
-                        <span v-if="voucher.loaiVoucher === 1">
-                            Giảm {{ formatVND(voucher.giaTriGiam) }} (Đơn hàng từ {{ formatVND(voucher.giaTriToiThieu)
-                            }})
-                        </span>
-                        <span v-else>
-                            Giảm {{ voucher.giaTriGiam }}% (Đơn hàng từ {{ formatVND(voucher.giaTriToiThieu) }})
-                            - Giảm tối đa {{ formatVND(voucher.giaTriToiThieu * voucher.giaTriGiam / 100) }}
-                        </span>
+                        {{ voucher.maVoucher }} - {{ voucher.moTa }}
                     </option>
                 </select>
+
             </div>
 
             <!-- Hiển thị tổng tiền -->
