@@ -37,10 +37,23 @@ public class ThongKeController {
     public List<Object[]> getSanPhamBanChay() {
         return thongKeService.getSanPhamBanChay();
     }
-    @GetMapping("/san-pham-ban-chay-hom-nay")
+    //
+    @GetMapping("/san-pham-ban-chay/ngay")
     public ResponseEntity<List<Map<String, Object>>> getSanPhamBanChayHomNay() {
         return ResponseEntity.ok(thongKeService.getSanPhamBanChayHomNay());
     }
+    //
+    @GetMapping("/san-pham-ban-chay/thang")
+    public ResponseEntity<List<Map<String, Object>>> getSanPhamBanChayTrongThang() {
+        return ResponseEntity.ok(thongKeService.getSanPhamBanChayTrongThang());
+    }
+    //
+    @GetMapping("/san-pham-ban-chay/nam")
+    public ResponseEntity<List<Map<String, Object>>> getSanPhamBanChayTheoNam() {
+        return ResponseEntity.ok(thongKeService.getSanPhamBanChayTheoNam());
+    }
+
+
 
     @GetMapping("/trang-thai-don-hang/ngay")
     public ResponseEntity<List<Map<String, Object>>> thongKeTrangThaiDonHangTheoNgay() {
@@ -54,12 +67,8 @@ public class ThongKeController {
     public ResponseEntity<List<Map<String, Object>>> getTrangThaiDonHangTheoNam() {
         return ResponseEntity.ok(thongKeService.thongKeTrangThaiDonHangTheoNam());
     }
-    @GetMapping("/san-pham-ban-chay/nhat-hom-nay")
-    public ResponseEntity<Map<String, Object>> getSanPhamBanChayNhatHomNay() {
-        Map<String, Object> sanPham = thongKeService.getSanPhamBanChayNhatHomNay();
-        if (sanPham == null) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(sanPham);
+    @GetMapping("/san-pham-sap-het-hang")
+    public ResponseEntity<List<Map<String, Object>>> getSanPhamSapHetHang() {
+        return ResponseEntity.ok(thongKeService.getSanPhamSapHetHang());
     }
 }

@@ -12,14 +12,13 @@ import java.time.LocalDateTime;
 public class SanPhamChiTietResponse {
     private Integer id;
     private String maSPCT;
+    private Integer sanPhamId;
     private String tenSanPham;
     private String tenDeGiay;
     private String tenThuongHieu;
     private String tenChatLieu;
     private String tenDanhMuc;
     private String tenMau;
-    private String tenKhuyenMai;
-    private Float phanTramGiamGia;
     private LocalDateTime ngayBatDau;
     private LocalDateTime ngayKetThuc;
     private String tenSize;

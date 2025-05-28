@@ -28,6 +28,6 @@ public interface SanPhamRepo extends JpaRepository<SanPham, Integer> {
 
     @Query("SELECT a FROM AnhSanPham a WHERE a.sanPham.id = :sanPhamId")
     List<AnhSanPham> findBySanPhamId(@Param("sanPhamId") Integer sanPhamId);
-
-
+    boolean existsByTenSanPham(String tenSanPham);
+    boolean existsByTenSanPhamIgnoreCaseAndIdNot(String tenSanPham, Integer id);
 }

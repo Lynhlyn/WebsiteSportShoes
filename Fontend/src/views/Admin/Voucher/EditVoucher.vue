@@ -25,7 +25,9 @@
             <div class="col-md-6 mb-3">
               <label class="form-label">Giá trị giảm</label>
               <div class="input-group">
-                <input v-model="voucher.giaTriGiam" type="number" class="form-control" required />
+                <input v-model="voucher.giaTriGiam" type="number" class="form-control"
+                  :max="voucher.loaiVoucher === 0 ? 100 : null" :min="0" required />
+
                 <div class="ms-3 d-flex align-items-center gap-2">
                   <input type="radio" id="percent" :value="0" v-model.number="voucher.loaiVoucher" />
                   <label for="percent">%</label>
@@ -44,7 +46,7 @@
           <div class="row">
             <div class="col-md-6 mb-3" v-if="voucher.loaiVoucher === 0">
               <label class="form-label">Giá trị giảm tối đa</label>
-              <input v-model="voucher.giaTriToiDa" type="number" class="form-control" required />
+              <input v-model="voucher.giaTriToiDa" type="number" class="form-control" disabled />
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Số lượng</label>
@@ -124,7 +126,7 @@ export default {
         giaTriToiDa: '',
         ngayBatDau: '',
         ngayKetThuc: '',
-        loaiVoucher: 0, // 1: Giảm số tiền, 2: Giảm phần trăm
+        loaiVoucher: 1, // 1: Giảm số tiền, 2: Giảm phần trăm
         soLuong: '',
         trangThai: true,
         kieuVoucher: 'public'
@@ -137,7 +139,7 @@ export default {
       selectAll: false
     };
   },
-  
+
   async mounted() {
     await this.fetchVoucher();
     await this.fetchAllVouchers();
@@ -146,10 +148,29 @@ export default {
 
   watch: {
     'voucher.giaTriGiam': 'updateGiaTriToiDa',
-    'voucher.giaTriToiThieu': 'updateGiaTriToiDa'
+    'voucher.giaTriToiThieu': 'updateGiaTriToiDa',
+    'voucher.loaiVoucher': 'updateGiaTriToiDa'
   },
 
   methods: {
+    updateGiaTriToiDa() {
+      const { giaTriGiam, giaTriToiThieu, loaiVoucher } = this.voucher;
+
+      if (!giaTriToiThieu || !giaTriGiam) return;
+
+      const giaTriToiThieuNum = Number(giaTriToiThieu);
+      let giaTriGiamNum = Number(giaTriGiam);
+
+      if (loaiVoucher === 0) {
+        if (giaTriGiamNum > 100) {
+          giaTriGiamNum = 100;
+          this.voucher.giaTriGiam = 100;
+        }
+        this.voucher.giaTriToiDa = (giaTriToiThieuNum * giaTriGiamNum / 100).toFixed(2);
+      } else {
+        this.voucher.giaTriToiDa = giaTriGiamNum;
+      }
+    },
     async fetchVoucher() {
       try {
         const response = await axios.get(`http://localhost:8080/admin/voucher/${this.id}`);
@@ -186,12 +207,12 @@ export default {
       const giaTriGiamNum = Number(giaTriGiam);
       const giaTriToiThieuNum = Number(giaTriToiThieu);
 
-      if (giaTriGiamNum > giaTriToiThieuNum) {
+      if (giaTriGiamNum > giaTriToiThieuNum && loaiVoucher !== 0) {
         alert("Giá trị giảm không được lớn hơn giá trị tối thiểu.");
         return false;
       }
 
-      if (loaiVoucher === 2 && giaTriGiamNum > 100) {
+      if (loaiVoucher === 0 && giaTriGiamNum > 100) {
         alert("Giá trị giảm phần trăm không được vượt quá 100%.");
         return false;
       }
@@ -199,22 +220,23 @@ export default {
       return true;
     },
 
-    updateGiaTriToiDa() {
-      if (!this.voucher.giaTriToiThieu || !this.voucher.giaTriGiam) return;
 
-      const giaTriToiThieuNum = Number(this.voucher.giaTriToiThieu);
-      const giaTriGiamNum = Number(this.voucher.giaTriGiam);
+    // updateGiaTriToiDa() {
+    //   if (!this.voucher.giaTriToiThieu || !this.voucher.giaTriGiam) return;
 
-      if (this.voucher.loaiVoucher === 2) { // Giảm theo phần trăm
-        this.voucher.giaTriToiDa = (giaTriToiThieuNum * (giaTriGiamNum / 100)).toFixed(2);
-      } else {
-        this.voucher.giaTriToiDa = giaTriGiamNum;
-      }
-    },
+    //   const giaTriToiThieuNum = Number(this.voucher.giaTriToiThieu);
+    //   const giaTriGiamNum = Number(this.voucher.giaTriGiam);
+
+    //   if (this.voucher.loaiVoucher === 2) { // Giảm theo phần trăm
+    //     this.voucher.giaTriToiDa = (giaTriToiThieuNum * (giaTriGiamNum / 100)).toFixed(2);
+    //   } else {
+    //     this.voucher.giaTriToiDa = giaTriGiamNum;
+    //   }
+    // },
 
     async saveVoucher() {
       if (!this.validateVoucher()) return;
-      
+
       if (new Date(this.voucher.ngayBatDau) > new Date(this.voucher.ngayKetThuc)) {
         alert("Cập nhật thất bại! Ngày bắt đầu không được lớn hơn ngày kết thúc.");
         return;
@@ -260,4 +282,3 @@ export default {
   }
 };
 </script>
-

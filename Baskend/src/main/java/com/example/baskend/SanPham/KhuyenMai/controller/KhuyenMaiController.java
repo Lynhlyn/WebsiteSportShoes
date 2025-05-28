@@ -51,45 +51,45 @@ public class KhuyenMaiController {
     //     return ResponseEntity.ok(responseList);
     // }
 // Lấy tất cả khuyến mãi hoặc tìm kiếm theo mã hoặc tên, và lọc theo ngày
-@GetMapping("")
-public ResponseEntity<List<KhuyenMaiResponse>> getAllKhuyenMai(@RequestParam(required = false) String keyword,
-                                                                @RequestParam(required = false) String startDate,
-                                                                @RequestParam(required = false) String endDate,
-                                                                @RequestParam(required = false) Boolean trangThai) {
-    List<KhuyenMai> khuyenMais = khuyenMaiRepo.findAll();
+    @GetMapping("")
+    public ResponseEntity<List<KhuyenMaiResponse>> getAllKhuyenMai(@RequestParam(required = false) String keyword,
+                                                                   @RequestParam(required = false) String startDate,
+                                                                   @RequestParam(required = false) String endDate,
+                                                                   @RequestParam(required = false) Boolean trangThai) {
+        List<KhuyenMai> khuyenMais = khuyenMaiRepo.findAll();
 
-    if (keyword != null && !keyword.trim().isEmpty()) {
-        khuyenMais = khuyenMais.stream()
-                .filter(km -> km.getTenKhuyenMai().toLowerCase().contains(keyword.toLowerCase()))
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            khuyenMais = khuyenMais.stream()
+                    .filter(km -> km.getTenKhuyenMai().toLowerCase().contains(keyword.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
+
+        if (trangThai != null) {
+            khuyenMais = khuyenMais.stream()
+                    .filter(km -> km.getTrangThai().equals(trangThai))
+                    .collect(Collectors.toList());
+        }
+
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            LocalDate startLocalDate = LocalDate.parse(startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            khuyenMais = khuyenMais.stream()
+                    .filter(km -> !km.getNgayBatDau().isBefore(startLocalDate.atStartOfDay()))
+                    .collect(Collectors.toList());
+        }
+
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            LocalDate endLocalDate = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            khuyenMais = khuyenMais.stream()
+                    .filter(km -> !km.getNgayKetThuc().isAfter(endLocalDate.atStartOfDay()))
+                    .collect(Collectors.toList());
+        }
+
+        List<KhuyenMaiResponse> responseList = khuyenMais.stream()
+                .map(this::mapKhuyenMaiToResponse)
                 .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responseList);
     }
-
-    if (trangThai != null) {
-        khuyenMais = khuyenMais.stream()
-                .filter(km -> km.getTrangThai().equals(trangThai))
-                .collect(Collectors.toList());
-    }
-
-    if (startDate != null && !startDate.trim().isEmpty()) {
-        LocalDate startLocalDate = LocalDate.parse(startDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        khuyenMais = khuyenMais.stream()
-                .filter(km -> !km.getNgayBatDau().isBefore(startLocalDate.atStartOfDay()))
-                .collect(Collectors.toList());
-    }
-
-    if (endDate != null && !endDate.trim().isEmpty()) {
-        LocalDate endLocalDate = LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        khuyenMais = khuyenMais.stream()
-                .filter(km -> !km.getNgayKetThuc().isAfter(endLocalDate.atStartOfDay()))
-                .collect(Collectors.toList());
-    }
-
-    List<KhuyenMaiResponse> responseList = khuyenMais.stream()
-            .map(this::mapKhuyenMaiToResponse)
-            .collect(Collectors.toList());
-
-    return ResponseEntity.ok(responseList);
-}
 
     // Tìm kiếm khuyến mãi theo tên
     @GetMapping("/search")
@@ -146,6 +146,27 @@ public ResponseEntity<List<KhuyenMaiResponse>> getAllKhuyenMai(@RequestParam(req
 
     // Chuyển đổi từ KhuyenMai Entity sang KhuyenMaiResponse với định dạng ngày tháng năm
     private KhuyenMaiResponse mapKhuyenMaiToResponse(KhuyenMai khuyenMai) {
+        boolean isActive = true;
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime todayDateTime = today.atStartOfDay(); // Chuyển đổi LocalDate thành LocalDateTime (00:00:00)
+
+        // Đảm bảo rằng cả ngày bắt đầu và ngày kết thúc đều là LocalDate
+        if (khuyenMai.getNgayBatDau() != null && khuyenMai.getNgayKetThuc() != null) {
+            LocalDateTime ngayBatDauDateTime = khuyenMai.getNgayBatDau().toLocalDate().atStartOfDay(); // Chuyển đổi ngày bắt đầu thành LocalDateTime (00:00:00)
+            LocalDateTime ngayKetThucDateTime = khuyenMai.getNgayKetThuc().toLocalDate().atStartOfDay(); // Chuyển đổi ngày kết thúc thành LocalDateTime (00:00:00)
+
+            // Nếu ngày bắt đầu chưa đến hoặc ngày kết thúc đã qua thì trạng thái là false
+            if (ngayBatDauDateTime.isAfter(todayDateTime) || ngayKetThucDateTime.isBefore(todayDateTime)) {
+                isActive = false;
+            }
+        }
+
+        // Cập nhật trạng thái trong cơ sở dữ liệu
+        khuyenMai.setTrangThai(isActive); // Cập nhật trạng thái
+
+        // Tiến hành lưu lại đối tượng khuyến mãi vào cơ sở dữ liệu
+        khuyenMaiRepo.save(khuyenMai);
         return new KhuyenMaiResponse(
                 khuyenMai.getId(),
                 khuyenMai.getMaKhuyenMai(),
@@ -159,5 +180,9 @@ public ResponseEntity<List<KhuyenMaiResponse>> getAllKhuyenMai(@RequestParam(req
         );
     }
 
-
+    @GetMapping("/khuyen-mai/get-max-ma")
+    public ResponseEntity<String> getMaxMaKhuyenMai() {
+        String maxMaKhuyenMai = khuyenMaiRepo.findMaxMaKhuyenMai(); // Phương thức tìm mã khuyến mãi lớn nhất
+        return ResponseEntity.ok(maxMaKhuyenMai != null ? maxMaKhuyenMai : "KM0");
+    }
 }

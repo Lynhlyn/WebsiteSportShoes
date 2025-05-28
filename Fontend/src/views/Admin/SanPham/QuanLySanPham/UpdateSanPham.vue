@@ -12,19 +12,19 @@ const urlSanPham = "http://localhost:8080/san-pham";
 const sanPham = ref({
       tenSanPham: "",
       moTa: "",
-      danhMuc: null,
-      thuongHieu: null,
-      chatLieu: null,
-      deGiay: null,
+      danhMuc: null,  // Keep it as id for proper binding
+      thuongHieu: null,  // Keep it as id for proper binding
+      chatLieu: null,  // Keep it as id for proper binding
+      deGiay: null,  // Keep it as id for proper binding
       trangThai: true,
 });
 
-const hinhAnhList = ref([]);
 const danhMucList = ref([]);
 const thuongHieuList = ref([]);
 const chatLieuList = ref([]);
 const deGiayList = ref([]);
 const selectedFiles = ref([]);
+const hinhAnhList = ref([]);
 const loading = ref(false);
 const errorMessage = ref("");
 const successMessage = ref("");
@@ -69,11 +69,6 @@ const fetchSanPham = async () => {
       } finally {
             loading.value = false;
       }
-};
-
-// Xử lý chọn ảnh tải lên
-const handleFileUpload = (event) => {
-      selectedFiles.value = Array.from(event.target.files);
 };
 
 // Gửi yêu cầu cập nhật sản phẩm
@@ -121,18 +116,6 @@ onMounted(() => {
                   </div>
 
                   <form v-if="!loading" @submit.prevent="updateSanPham">
-                        <label class="form-label">Hình ảnh sản phẩm</label>
-                        <div>
-        <label class="block font-semibold">Hình ảnh hiện tại:</label>
-        <div class="flex space-x-2">
-          <img v-for="img in hinhAnhList" :key="img.id" :src="img.url" class="w-20 h-20 object-cover" />
-        </div>
-      </div>
-
-      <div>
-        <label class="block font-semibold">Tải lên hình ảnh mới:</label>
-        <input type="file" multiple @change="handleFileUpload" class="border p-2 w-full" />
-      </div>
                         <div class="mb-3">
                               <label class="form-label">Tên sản phẩm</label>
                               <input v-model="sanPham.tenSanPham" class="form-control shadow-sm" required />
@@ -148,7 +131,7 @@ onMounted(() => {
                                     <label class="form-label">Danh Mục</label>
                                     <select v-model="sanPham.danhMuc" class="form-select shadow-sm">
                                           <option v-for="dm in danhMucList" :key="dm.id" :value="dm.id">{{ dm.tenDanhMuc
-                                          }}</option>
+                                                }}</option>
                                     </select>
                               </div>
 
@@ -173,9 +156,8 @@ onMounted(() => {
                               <div class="col-md-6 mb-3">
                                     <label class="form-label">Đế giày</label>
                                     <select v-model="sanPham.deGiay" class="form-select shadow-sm">
-                                          <option v-for="dg in deGiayList || []" :key="dg.id" :value="dg.id">
-                                            {{ dg.tenDeGiay || "Không có dữ liệu" }}
-                                          </option>
+                                          <option v-for="dg in deGiayList" :key="dg.id" :value="dg.id">{{ dg.tenDeGiay
+                                                || "Không có dữ liệu" }}</option>
                                     </select>
                               </div>
                         </div>
@@ -188,7 +170,6 @@ onMounted(() => {
                               </select>
                         </div>
 
-                        <!-- Nút cập nhật + quay lại -->
                         <div class="d-flex gap-3">
                               <button type="submit" class="btn btn-primary btn-lg shadow-sm" :disabled="loading">
                                     <span v-if="loading" class="spinner-border spinner-border-sm"></span>

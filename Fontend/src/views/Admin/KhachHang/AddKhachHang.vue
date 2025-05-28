@@ -26,14 +26,14 @@ const errors = ref({});
 const validateForm = () => {
     errors.value = {};
 
-    if (!maKhachHang.value) errors.value.maKhachHang = "Mã khách hàng không được để trống";
+
     if (!tenDangNhap.value || tenDangNhap.value.length < 6) {
         errors.value.tenDangNhap = "Tên đăng nhập phải có ít nhất 6 ký tự";
     }
     if (!hoTen.value) errors.value.hoTen = "Họ tên không được để trống";
-    if (!email.value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-        errors.value.email = "Email không hợp lệ";
-    }
+     if (!email.value || !/^[^\s@]+@[^\s@]+\.(com)$/.test(email.value) || !email.value.endsWith('@gmail.com')) {
+            errors.value.email = "Địa chỉ Gmail hợp lệ";
+        }
     if (!matKhau.value || matKhau.value.length < 6) {
         errors.value.matKhau = "Mật khẩu phải có ít nhất 6 ký tự";
     }
@@ -47,20 +47,74 @@ const validateForm = () => {
     return Object.keys(errors.value).length === 0;
 };
 
+// Hàm tạo mã khách hàng
+const generateMaKhachHang = async () => {
+    try {
+        // Lấy danh sách khách hàng hiện có
+        const response = await axios.get(`${BASE_URL}/khach-hang`);
+        const khachHangList = response.data;
+
+        let newMaKH = "KH01"; // Mặc định bắt đầu từ KH01
+
+        // Kiểm tra nếu danh sách khách hàng có dữ liệu
+        if (khachHangList && khachHangList.length > 0) {
+            // Lấy mã khách hàng lớn nhất và tăng thêm 1
+            const maxMaKH = khachHangList.reduce((max, kh) => {
+                const numericPart = parseInt(kh.maKhachHang.replace('KH0', ''), 10); // Tách phần số
+                return numericPart > max ? numericPart : max;
+            }, 0);
+
+            // Tạo mã mới cho khách hàng
+            newMaKH = `KH0${maxMaKH + 1}`;
+        }
+
+        // Kiểm tra xem mã khách hàng mới có tồn tại không
+        const exists = await checkMaKhachHangExists(newMaKH);
+        if (exists) {
+            // Nếu mã khách hàng đã tồn tại, tạo mã mới
+            newMaKH = `KH${parseInt(newMaKH.replace('KH0', ''), 10) + 1}`;
+        }
+
+        return newMaKH;
+
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách khách hàng:", error.response ? error.response.data : error.message);
+        return "KH01"; // Mặc định là KH01 nếu có lỗi
+    }
+};
+
+// Kiểm tra mã khách hàng đã tồn tại trong cơ sở dữ liệu hay chưa
+const checkMaKhachHangExists = async (maKhachHang) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/khach-hang/${maKhachHang}`);
+        return response.status === 200; // Nếu mã đã tồn tại, trả về true
+    } catch (error) {
+        return false; // Nếu không tìm thấy mã khách hàng (lỗi 404), trả về false
+    }
+};
 
 // Hàm xử lý thêm khách hàng
 const handleAddKhachHang = async () => {
     if (!validateForm()) return;
 
+    // Xác nhận trước khi thêm khách hàng
+        const isConfirmed = window.confirm('Bạn có chắc chắn muốn thêm khách hàng này không?');
+
+        if (!isConfirmed) {
+            return; // Dừng lại nếu người dùng không xác nhận
+        }
+
     const newKhachHang = {
-        maKhachHang: maKhachHang.value,
-        tenDangNhap: tenDangNhap.value,
+        maKhachHang: await generateMaKhachHang(),
         hoTen: hoTen.value,
         email: email.value,
-        matKhau: matKhau.value,
         soDienThoai: soDienThoai.value,
         gioiTinh: gioiTinh.value,
         trangThai: trangThai.value,
+        taiKhoan: {
+                    tenDangNhap: tenDangNhap.value,
+                    matKhau: matKhau.value,
+                }
     };
 
     isLoading.value = true;
@@ -68,7 +122,7 @@ const handleAddKhachHang = async () => {
     try {
         await axios.post(urlKhachHang, newKhachHang);
         alert("Thêm khách hàng thành công!");
-        router.push('/admin/customers');
+        router.go(-1);
     } catch (error) {
         console.error("Lỗi khi thêm khách hàng:", error.response ? error.response.data : error.message);
         errors.value.apiError = error.response?.data || "Có lỗi xảy ra, vui lòng thử lại!";
@@ -84,11 +138,7 @@ const handleAddKhachHang = async () => {
 
         <div class="card p-4 shadow-sm">
             <form @submit.prevent="handleAddKhachHang">
-                <div class="mb-3">
-                    <label class="form-label">Mã khách hàng</label>
-                    <input v-model="maKhachHang" type="text" class="form-control" placeholder="Nhập mã khách hàng">
-                    <small v-if="errors.maKhachHang" class="text-danger">{{ errors.maKhachHang }}</small>
-                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Tên đăng nhập</label>
                     <input v-model="tenDangNhap" type="text" class="form-control" placeholder="Nhập tên đăng nhập">
@@ -106,7 +156,7 @@ const handleAddKhachHang = async () => {
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Mật khẩu</label>
-                    <input v-model="matKhau" type="text" class="form-control" placeholder="Nhập mật khẩu">
+                    <input v-model="matKhau" type="password" class="form-control" placeholder="Nhập mật khẩu">
                     <small v-if="errors.matKhau" class="text-danger">{{ errors.matKhau }}</small>
                 </div>
                 <div class="mb-3">
@@ -118,8 +168,8 @@ const handleAddKhachHang = async () => {
                     <label class="form-label">Giới tính</label>
                     <select v-model="gioiTinh" class="form-select">
                         <option value="" disabled>Chọn giới tính</option>
-                        <option value="true">Nam</option>
-                        <option value="false">Nữ</option>
+                        <option value="false">Nam</option>
+                        <option value="true">Nữ</option>
                     </select>
                      <small v-if="errors.gioiTinh" class="text-danger">{{ errors.gioiTinh }}</small>
                 </div>

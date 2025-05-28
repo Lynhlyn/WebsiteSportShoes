@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VoucherRepository extends JpaRepository<Voucher,Integer> {
@@ -41,6 +42,12 @@ public interface VoucherRepository extends JpaRepository<Voucher,Integer> {
             @Param("kieuVoucher") String kieuVoucher,
             @Param("trangThai") Boolean trangThai,
             Pageable pageable);
+
+    Optional<Voucher> findByMaVoucher(String maVoucher);
+
+    public interface VoucherRepo extends JpaRepository<Voucher, Integer> {
+        Optional<Voucher> findByMaVoucher(String maVoucher);
+    }
 
 }
     // Lấy danh sách voucher đã kết thúc (đã hết hạn)

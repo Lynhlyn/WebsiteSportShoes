@@ -5,8 +5,11 @@ import com.example.baskend.NhanVien.entity.NhanVien;
 import com.example.baskend.PhuongThucThanhToan.entity.PhuongThucThanhToan;
 import com.example.baskend.Vouchers.entity.Voucher;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -41,25 +44,14 @@ public class DonHang {
    private Boolean loaiDonHang; // Online (1), Offline (0)
    @Column(name = "trang_thai_don_hang", nullable = true)
    private String trangThaiDonHang; // Trạng thái đơn hàng (Ví dụ: 'Đang giao', 'Đã giao')
-   @Column(name = "tong_tien", nullable = true)
-   private Double tongTien; // Tổng tiền thanh toán (bao gồm chi phí giao hàng, khuyến mãi)
+   @Column(name = "tong_tien", precision = 18, scale = 2)
+   private BigDecimal tongTien;
    @Column(name = "chi_phi_giao_hang", nullable = true)
    private Double chiPhiGiaoHang; // Chi phí giao hàng
    @Column(name = "ngay_tao")
    private LocalDateTime ngayTao; // Ngày tạo đơn hàng
    @Column(name = "ngay_sua")
    private LocalDateTime ngaySua; // Ngày cập nhật
-//
-//    private LocalDateTime ngayThanhToan; // Ngày thanh toán
-
-//    private String trangThaiThanhToan; // Trạng thái thanh toán (Ví dụ: 'Chưa thanh toán', 'Đã thanh toán')
-
-//    @PrePersist
-//    protected void onCreate() {
-//        this.ngayTao = LocalDateTime.now();
-//        this.ngaySua = LocalDateTime.now();
-//        this.trangThaiThanhToan = "Chưa thanh toán"; // Mặc định trạng thái thanh toán là 'Chưa thanh toán'
-//    }
 
    @PreUpdate
    protected void onUpdate() {

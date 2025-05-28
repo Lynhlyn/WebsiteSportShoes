@@ -3,6 +3,7 @@ package com.example.baskend.SanPham.KhuyenMai.repository;
 import com.example.baskend.SanPham.KhuyenMai.entity.KhuyenMai;
 import com.example.baskend.SanPham.QuanLySanPham.entity.SanPham;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -17,5 +18,6 @@ public interface KhuyenMaiRepo extends JpaRepository<KhuyenMai, Integer> {
     List<KhuyenMai> findByNgayBatDauBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     List<KhuyenMai> findByTrangThaiAndNgayBatDauBetween(Boolean trangThai, LocalDateTime startDate, LocalDateTime endDate);
-
+    @Query("SELECT MAX(km.maKhuyenMai) FROM KhuyenMai km")
+    String findMaxMaKhuyenMai();
 }

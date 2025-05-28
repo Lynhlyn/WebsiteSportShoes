@@ -3,7 +3,6 @@ import '@/assets/main.css'
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import Header from "@/components/User/Header.vue";
-import Navbar from "@/components/User/Navbar.vue";
 import Footer from "@/components/User/Footer.vue";
 
 const stores = [
@@ -35,7 +34,7 @@ const stores = [
 <template>
     <div class="container my-4">
         <!-- Navbar -->
-        <Navbar />
+        <Header />
         
 
         <div class="stores-content my-5">

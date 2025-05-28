@@ -5,9 +5,9 @@ import com.example.baskend.DonHang.repository.DonHangRepo;
 import com.example.baskend.DonHangChiTiet.entity.DonHangChiTiet;
 import com.example.baskend.DonHangChiTiet.repository.DonHangChiTietRepo;
 import com.example.baskend.DonHangChiTiet.response.DonHangChiTietResponse;
+import com.example.baskend.DonHangChiTiet.response.SanPhamChiTietDonHangresponse;
 import com.example.baskend.SanPham.SanPhamChiTiet.entity.SanPhamChiTiet;
 import com.example.baskend.SanPham.SanPhamChiTiet.repository.SanPhamChiTietRepo;
-import com.example.baskend.SanPham.SanPhamChiTiet.response.SanPhamChiTietResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,19 +35,6 @@ public class DonHangChiTietController {
     @Autowired
     private SanPhamChiTietRepo sanPhamChiTietRepo;
 
-    // Lấy tất cả chi tiết đơn hàng
-//    @GetMapping
-//    public List<DonHangChiTiet> getAllDonHangChiTiet() {
-//        return donHangChiTietRepo.findAll();
-//    }
-
-    // Lấy chi tiết đơn hàng theo id
-//    @GetMapping("/{id}")
-//    public ResponseEntity<DonHangChiTiet> getDonHangChiTietById(@PathVariable Integer id) {
-//        Optional<DonHangChiTiet> donHangChiTiet = donHangChiTietRepo.findById(id);
-//        return donHangChiTiet.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-//    }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<DonHangChiTietResponse> getDonHangChiTietById(@PathVariable Integer id) {
@@ -63,10 +50,16 @@ public class DonHangChiTietController {
         List<DonHangChiTiet> donHangChiTietList = donHangChiTietRepo.findByDonHangId(id);
 
         // Mapping DonHangChiTiet to DonHangChiTietResponse
-        List<SanPhamChiTietResponse> sanPhamChiTietResponses = donHangChiTietList.stream()
+
+        List<SanPhamChiTietDonHangresponse> sanPhamChiTietDonHangresponses = donHangChiTietList.stream()
                 .map(donHangChiTiet -> {
+                    SanPhamChiTiet spct = donHangChiTiet.getSanPhamChiTiet();
+
+                    // Tính giá giảm
+
                     // Map each DonHangChiTiet's SanPhamChiTiet to SanPhamChiTietResponse
-                    SanPhamChiTietResponse sanPhamResponse = new SanPhamChiTietResponse(
+                    SanPhamChiTietDonHangresponse sanPhamResponse = new SanPhamChiTietDonHangresponse(
+                            donHangChiTiet.getId(),
                             donHangChiTiet.getSanPhamChiTiet().getId(),
                             donHangChiTiet.getSanPhamChiTiet().getMaSPCT(),
                             donHangChiTiet.getSanPhamChiTiet().getSanPham().getTenSanPham(),
@@ -75,16 +68,15 @@ public class DonHangChiTietController {
                             donHangChiTiet.getSanPhamChiTiet().getSanPham().getChatLieu().getTenChatLieu(),
                             donHangChiTiet.getSanPhamChiTiet().getSanPham().getDanhMuc().getTenDanhMuc(),
                             donHangChiTiet.getSanPhamChiTiet().getMauSac().getTenMau(),
-                            donHangChiTiet.getSanPhamChiTiet().getKhuyenMai() != null ? donHangChiTiet.getSanPhamChiTiet().getKhuyenMai().getTenKhuyenMai() : null,
-                            donHangChiTiet.getSanPhamChiTiet().getKhuyenMai() != null ? donHangChiTiet.getSanPhamChiTiet().getKhuyenMai().getPhanTramGiamGia() : null,
-                            donHangChiTiet.getSanPhamChiTiet().getKhuyenMai().getNgayBatDau(),
-                            donHangChiTiet.getSanPhamChiTiet().getKhuyenMai().getNgayKetThuc(),
+
                             donHangChiTiet.getSanPhamChiTiet().getSize().getTenSize(),
                             donHangChiTiet.getSanPhamChiTiet().getGiaBan(),
                             donHangChiTiet.getSoLuong(),
                             donHangChiTiet.getSanPhamChiTiet().getNgayTao(),
                             donHangChiTiet.getSanPhamChiTiet().getNgaySua(),
-                            donHangChiTiet.getTrangThai()
+
+                            donHangChiTiet.getSanPhamChiTiet().getTrangThai()
+
                     );
                     return sanPhamResponse;
                 }).collect(Collectors.toList());
@@ -93,7 +85,7 @@ public class DonHangChiTietController {
         DonHangChiTietResponse response = new DonHangChiTietResponse(
                 donHang.getId(),
                 donHang,
-                sanPhamChiTietResponses, // List of products
+                sanPhamChiTietDonHangresponses, // List of products
                 donHangChiTietList.stream().mapToInt(DonHangChiTiet::getSoLuong).sum(),
                 (float) donHangChiTietList.stream().mapToDouble(d -> d.getDonGia() * d.getSoLuong()).sum(),
                 donHangChiTietList.get(0).getNgayTao().toString(),
@@ -104,20 +96,6 @@ public class DonHangChiTietController {
         return ResponseEntity.ok(response);
     }
 
-
-    // Thêm chi tiết đơn hàng mới
-//    @PostMapping
-//    public ResponseEntity<DonHangChiTiet> createDonHangChiTiet(@RequestBody DonHangChiTiet donHangChiTiet) {
-//        // Kiểm tra xem sản phẩm có tồn tại trong cơ sở dữ liệu không
-//        Optional<SanPhamChiTiet> sanPhamChiTietOpt = sanPhamChiTietRepo.findById(donHangChiTiet.getSanPhamChiTiet().getId());
-//        if (sanPhamChiTietOpt.isEmpty()) {
-//            return ResponseEntity.badRequest().body(null); // Trả về lỗi nếu sản phẩm không tồn tại
-//        }
-//
-//        // Lưu chi tiết đơn hàng vào cơ sở dữ liệu
-//        DonHangChiTiet savedDonHangChiTiet = donHangChiTietRepo.save(donHangChiTiet);
-//        return ResponseEntity.ok(savedDonHangChiTiet);
-//    }
     @GetMapping
     public ResponseEntity<Page<DonHangChiTiet>> getAllDonHangChiTiet(Pageable pageable) {
         Page<DonHangChiTiet> donHangChiTietPage = donHangChiTietRepo.findAll(pageable);
@@ -143,14 +121,24 @@ public class DonHangChiTietController {
 
         Optional<DonHangChiTiet> existingDonHangChiTiet = donHangChiTietRepo.findByDonHangAndSanPhamChiTiet(donHang, spct);
 
+        // Kiểm tra tổng số lượng trong hóa đơn (cũ + mới) so với tồn kho
+        int existingQuantity = existingDonHangChiTiet.map(DonHangChiTiet::getSoLuong).orElse(0);
+        int totalQuantity = existingQuantity + donHangChiTiet.getSoLuong();
+
+        if (totalQuantity > spct.getSoLuong()) {
+            return ResponseEntity.badRequest().body("❌ Số lượng vượt quá tồn kho của sản phẩm.");
+        }
+
         if (existingDonHangChiTiet.isPresent()) {
+            // Cập nhật số lượng của sản phẩm nếu đã có trong đơn hàng
             DonHangChiTiet updatedDonHangChiTiet = existingDonHangChiTiet.get();
-            updatedDonHangChiTiet.setSoLuong(updatedDonHangChiTiet.getSoLuong() + donHangChiTiet.getSoLuong());
+            updatedDonHangChiTiet.setSoLuong(totalQuantity);
             updatedDonHangChiTiet.setDonGia(spct.getGiaBan()); // Cập nhật giá sản phẩm
             updatedDonHangChiTiet.setNgaySua(LocalDateTime.now());
             DonHangChiTiet savedDonHangChiTiet = donHangChiTietRepo.save(updatedDonHangChiTiet);
             return ResponseEntity.ok(savedDonHangChiTiet);
         } else {
+            // Nếu sản phẩm chưa có trong đơn hàng, tạo mới
             donHangChiTiet.setDonHang(donHang);
             donHangChiTiet.setSanPhamChiTiet(spct);
             donHangChiTiet.setDonGia(spct.getGiaBan());
@@ -160,25 +148,13 @@ public class DonHangChiTietController {
         }
     }
 
-
-    // Cập nhật chi tiết đơn hàng
-//    @PutMapping("/{id}")
-//    public ResponseEntity<DonHangChiTiet> updateDonHangChiTiet(@PathVariable Integer id, @RequestBody DonHangChiTiet donHangChiTiet) {
-//        Optional<DonHangChiTiet> existingDonHangChiTiet = donHangChiTietRepo.findById(id);
-//        if (existingDonHangChiTiet.isEmpty()) {
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        // Cập nhật thông tin chi tiết đơn hàng
-//        DonHangChiTiet updatedDonHangChiTiet = existingDonHangChiTiet.get();
-//        updatedDonHangChiTiet.setSoLuong(donHangChiTiet.getSoLuong());
-//        updatedDonHangChiTiet.setDonGia(donHangChiTiet.getDonGia());
-//        updatedDonHangChiTiet.setTrangThai(donHangChiTiet.getTrangThai());
-//        updatedDonHangChiTiet.setNgaySua(LocalDateTime.now());
-//
-//        DonHangChiTiet savedDonHangChiTiet = donHangChiTietRepo.save(updatedDonHangChiTiet);
-//        return ResponseEntity.ok(savedDonHangChiTiet);
+//    private float calculateDiscountedPrice(SanPhamChiTiet spct) {
+//        float originalPrice = spct.getGiaBan();
+//        float discountPercent = spct.getKhuyenMai() != null ? spct.getKhuyenMai().getPhanTramGiamGia() : 0;
+//        return originalPrice * (1 - discountPercent / 100);  // Tính giá giảm
 //    }
+
+
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateDonHangChiTietQuantity(@PathVariable Integer id, @RequestBody DonHangChiTiet updatedItem) {
         try {
@@ -215,6 +191,4 @@ public class DonHangChiTietController {
         }
         return ResponseEntity.notFound().build();
     }
-
-
 }

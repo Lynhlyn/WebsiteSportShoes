@@ -1,5 +1,6 @@
 package com.example.baskend.KhachHang.entity;
 
+import com.example.baskend.TaiKhoan.Entity.TaiKhoan;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -8,6 +9,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 
@@ -20,13 +24,10 @@ public class KhachHang {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @NotBlank(message = "Mã khách hàng không được để trống")
+
     @Column(name = "ma_khach_hang", length = 10)
     private String maKhachHang;
 
-    @NotBlank(message = "Tên đăng nhập không được để trống")
-    @Column(name = "ten_dang_nhap", unique = true, length = 50)
-    private String tenDangNhap;
 
     @NotBlank(message = "Họ tên không được để trống")
     @Column(name = "ho_ten", length = 100)
@@ -41,10 +42,9 @@ public class KhachHang {
     @Column(name = "email", unique = true, length = 100)
     private String email;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Column(name = "mat_khau")
-    private String matKhau;
-
+    @OneToOne
+    @JoinColumn(name = "id_tai_khoan", referencedColumnName = "id")
+    private TaiKhoan taiKhoan;
     @NotBlank(message = "Số điện thoại không được để trống")
     @Column(name = "so_dien_thoai", unique = true, length = 15)
     private String soDienThoai;
@@ -70,6 +70,12 @@ public class KhachHang {
     protected void onUpdate() {
         this.ngaySua = LocalDateTime.now();
     }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<String> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest().body("ID phải là số nguyên hợp lệ");
+    }
+
 }
 
 

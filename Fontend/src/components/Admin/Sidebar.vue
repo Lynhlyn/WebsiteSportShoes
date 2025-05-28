@@ -1,12 +1,19 @@
 <script setup>
 import { RouterLink, useRoute } from 'vue-router';
-import { ref, reactive } from 'vue';
+import { ref, onMounted } from 'vue';
 
-// Lấy dữ liệu đăng nhập từ localStorage
-let userLogin = reactive({});
-if (localStorage.getItem("userLogin")) {
-    userLogin = JSON.parse(localStorage.getItem("userLogin"));
-}
+// Lấy thông tin người dùng từ localStorage
+const userLogin = ref({ name: '' });
+
+// Khi component được mount, lấy tên người dùng từ localStorage
+onMounted(() => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (user) {
+    userLogin.value.name = user.tenDangNhap || 'Admin'; // Gán tên đăng nhập hoặc mặc định là 'Admin'
+  } else {
+    userLogin.value.name = 'Admin'; // Nếu không có thông tin người dùng, gán mặc định là 'Admin'
+  }
+});
 
 const route = useRoute();
 
@@ -14,22 +21,23 @@ const route = useRoute();
 const isActive = (path) => route.path.startsWith(path);
 
 // Trạng thái mở/đóng của các menu con
-const openMenus = reactive({
-    sales: false,
-    stats: false,
-    products: false,
-    voucher: false,
-    staff: false,
-    customers: false,
-    orders: false,
-    chat: false,
+const openMenus = ref({
+  sales: false,
+  stats: false,
+  products: false,
+  voucher: false,
+  accounts: false,
+  customers: false,
+  orders: false,
+  chat: false,
 });
 
 // Hàm toggle menu
 const toggleMenu = (menu) => {
-    openMenus[menu] = !openMenus[menu];
+  openMenus.value[menu] = !openMenus.value[menu];
 };
 </script>
+
 
 <template>
     <div class="sidebar bg-dark text-light position-fixed top-0 start-0" style="width: 250px; height: 100vh;">
@@ -49,12 +57,11 @@ const toggleMenu = (menu) => {
                     <i class="bi bi-cart me-2"></i> Bán hàng
                 </button>
                 <div v-show="openMenus.sales">
-                    <RouterLink to="/admin/sales/offline" class="menu-item" :class="{ active: isActive('/admin/sales/offline') }">
+                    <RouterLink to="/admin/sales/offline" class="menu-item"
+                        :class="{ active: isActive('/admin/sales/offline') }">
                         <i class="bi bi-shop me-2"></i> Bán hàng tại quầy
                     </RouterLink>
-                    <RouterLink to="/admin/sales/online" class="menu-item" :class="{ active: isActive('/admin/sales/online') }">
-                        <i class="bi bi-globe me-2"></i> Bán hàng online
-                    </RouterLink>
+
                 </div>
             </div>
 
@@ -76,28 +83,44 @@ const toggleMenu = (menu) => {
                     <i class="bi bi-box me-2"></i> Sản phẩm
                 </button>
                 <div v-show="openMenus.products">
-                    <RouterLink to="/admin/products/manage" class="menu-item" :class="{ active: isActive('/admin/products/manage') }">
-                        <i class="bi bi-grid me-2"></i> Quản lý sản phẩm
+                    <RouterLink to="/admin/products/thuoc_tinh" class="menu-item"
+                        :class="{ active: isActive('/admin/products/thuoc_tinh') }">
+                        <i class="bi bi-box-seam me-2"></i> Quản lý sản phẩm
                     </RouterLink>
-                    <RouterLink to="/admin/products/details" class="menu-item" :class="{ active: isActive('/admin/products/details') }">
-                        <i class="bi bi-list-task me-2"></i> Sản phẩm chi tiết
-                    </RouterLink>
-                    <RouterLink to="/admin/products/promotions" class="menu-item" :class="{ active: isActive('/admin/products/promotions') }">
-                        <i class="bi bi-gift me-2"></i> Khuyến mại
-                    </RouterLink>
-                    <RouterLink to="/admin/products/categories" class="menu-item" :class="{ active: isActive('/admin/products/categories') }">
-                        <i class="bi bi-gift me-2"></i> Danh mục
-                    </RouterLink>
-                    <RouterLink to="/admin/products/de_giay" class="menu-item" :class="{ active: isActive('/admin/products/de_giay') }">
-                        <i class="bi bi-gift me-2"></i> Đế giày
-                    </RouterLink>
-                    <RouterLink to="/admin/products/thuong_hieu" class="menu-item" :class="{ active: isActive('/admin/products/thuong_hieu') }">
-                        <i class="bi bi-gift me-2"></i> Thương hiệu
-                    </RouterLink>
-                    <RouterLink to="/admin/products/chat_lieu" class="menu-item" :class="{ active: isActive('/admin/products/chat_lieu') }">
-                        <i class="bi bi-gift me-2"></i> Chất liệu
-                    </RouterLink>
+                    <!-- Quản lý thuộc tính -->
+                    <button class="menu-toggle sub-menu-toggle" @click="toggleMenu('productAttributes')">
+                        <i class="bi bi-list me-2"></i> Quản lý thuộc tính
+                    </button>
+                    <div v-show="openMenus.productAttributes">
+                        <RouterLink to="/admin/products/thuong_hieu" class="menu-item"
+                            :class="{ active: isActive('/admin/products/thuong_hieu') }">
+                            <i class="bi bi-star me-2"></i> Thương hiệu
+                        </RouterLink>
+                        <RouterLink to="/admin/products/categories" class="menu-item"
+                            :class="{ active: isActive('/admin/products/categories') }">
+                            <i class="bi bi-folder me-2"></i> Danh mục
+                        </RouterLink>
+                        <RouterLink to="/admin/products/chat_lieu" class="menu-item"
+                            :class="{ active: isActive('/admin/products/chat_lieu') }">
+                            <i class="bi bi-brush me-2"></i> Chất liệu
+                        </RouterLink>
+                        <RouterLink to="/admin/products/de_giay" class="menu-item"
+                            :class="{ active: isActive('/admin/products/de_giay') }">
+                            <i class="bi bi-shield me-2"></i> Đế giày
+                        </RouterLink>
+                        <RouterLink to="/admin/products/size" class="menu-item"
+                            :class="{ active: isActive('/admin/products/size') }">
+                            <i class="bi bi-aspect-ratio me-2"></i> Size
+                        </RouterLink>
+
+                        <RouterLink to="/admin/products/mau_sac" class="menu-item"
+                            :class="{ active: isActive('/admin/products/mau_sac') }">
+                            <i class="bi bi-palette me-2"></i> Màu sắc
+                        </RouterLink>
+
+                    </div>
                 </div>
+
             </div>
 
             <!-- Voucher -->
@@ -112,26 +135,21 @@ const toggleMenu = (menu) => {
                 </div>
             </div>
 
-            <!-- Nhân viên -->
+            <!-- Quản lý tài khoản -->
             <div class="menu-group">
-                <button class="menu-toggle" @click="toggleMenu('staff')">
-                    <i class="bi bi-person-badge me-2"></i> Nhân viên
+                <button class="menu-toggle" @click="toggleMenu('accounts')">
+                    <i class="bi bi-people-fill me-2"></i> Quản lý tài khoản
                 </button>
-                <div v-show="openMenus.staff">
-                    <RouterLink to="/admin/staff" class="menu-item" :class="{ active: isActive('/admin/staff') }">
-                        <i class="bi bi-person-gear me-2"></i> Quản lý nhân viên
+                <div v-show="openMenus.accounts">
+                    <RouterLink to="/admin/accounts" class="menu-item" :class="{ active: isActive('/admin/accounts') }">
+                        <i class="bi bi-person-vcard me-2"></i> Tài khoản
                     </RouterLink>
-                </div>
-            </div>
-
-            <!-- Khách hàng -->
-            <div class="menu-group">
-                <button class="menu-toggle" @click="toggleMenu('customers')">
-                    <i class="bi bi-people me-2"></i> Khách hàng
-                </button>
-                <div v-show="openMenus.customers">
-                    <RouterLink to="/admin/customers" class="menu-item" :class="{ active: isActive('/admin/customers') }">
-                        <i class="bi bi-person-check me-2"></i> Quản lý khách hàng
+                    <RouterLink to="/admin/staff" class="menu-item" :class="{ active: isActive('/admin/staff') }">
+                        <i class="bi bi-person-gear me-2"></i> Nhân viên
+                    </RouterLink>
+                    <RouterLink to="/admin/customers" class="menu-item"
+                        :class="{ active: isActive('/admin/customers') }">
+                        <i class="bi bi-person-check me-2"></i> Khách hàng
                     </RouterLink>
                 </div>
             </div>
@@ -143,25 +161,14 @@ const toggleMenu = (menu) => {
                 </button>
                 <div v-show="openMenus.orders">
                     <RouterLink to="/admin/orders" class="menu-item" :class="{ active: isActive('/admin/orders') }">
-                        <i class="bi bi-clipboard-check me-2"></i> Đơn hàng
+                        <i class="bi bi-clipboard-check me-2"></i> Đơn hàng offline
                     </RouterLink>
-                    <RouterLink to="/admin/order-details" class="menu-item" :class="{ active: isActive('/admin/order-details') }">
-                        <i class="bi bi-card-list me-2"></i> Đơn hàng chi tiết
+                    <RouterLink to="/admin/orders-online" class="menu-item" :class="{ active: isActive('/admin/orders-online') }">
+                        <i class="bi bi-clipboard-check me-2"></i> Đơn hàng online
                     </RouterLink>
                 </div>
             </div>
 
-            <!-- Chat -->
-            <div class="menu-group">
-                <button class="menu-toggle" @click="toggleMenu('chat')">
-                    <i class="bi bi-chat-dots me-2"></i> Chat
-                </button>
-                <div v-show="openMenus.chat">
-                    <RouterLink to="/admin/chat" class="menu-item" :class="{ active: isActive('/admin/chat') }">
-                        <i class="bi bi-chat-left-text me-2"></i> Chat hỗ trợ
-                    </RouterLink>
-                </div>
-            </div>
         </div>
     </div>
 </template>

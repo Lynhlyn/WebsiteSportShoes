@@ -31,7 +31,7 @@
         NĂM
       </button>
       <!-- <button class="btn btn-primary">TÙY CHỈNH</button> -->
- 
+
     </div>
   </div>
 
@@ -40,18 +40,26 @@
       <div class="col-lg-6 col-md-6 d-flex">
         <div class="card shadow-lg p-3 border-0 d-flex flex-column flex-grow-1 h-100">
           <h5 class="text-primary fw-bold text-center pb-3"> Sản Phẩm Bán Chạy</h5>
-          <table class="table table-striped">
+          <table class="table table-striped text-center">
             <thead>
               <tr>
-                <th>#</th>
+                <th>STT</th>
                 <th>Sản phẩm</th>
-                <th>Số lượng bán</th>
+                <th>Số lượng</th>
+                <th>Size</th>
+                <th>Màu sắc</th>
+                <th>Đế giày</th>
+                <th>Thương hiệu</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="(product, index) in bestSellingProducts" :key="index">
-                <td>{{ index + 1 }}</td>
+                <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
+                <td>{{ product.color }}</td>
+                <td>{{ product.size }}</td>
+                <td>{{ product.brand }}</td>
+                <td>{{ product.sole }}</td>
                 <td>{{ product.sold }}</td>
               </tr>
             </tbody>
@@ -80,8 +88,12 @@
           <table class="table table-striped text-center">
             <thead>
               <tr>
-                <th>#</th>
+                <th>STT</th>
                 <th>Sản phẩm</th>
+                <th>Size</th>
+                <th>Mùa sắc</th>
+                <th>Đế giày</th>
+                <th>Thương hiệu</th>
                 <th>Số lượng</th>
               </tr>
             </thead>
@@ -89,6 +101,10 @@
               <tr v-for="(product, index) in paginatedProducts" :key="index">
                 <td>{{ index + 1 + (currentPage - 1) * pageSize }}</td>
                 <td>{{ product.name }}</td>
+                <td>{{ product.color }}</td>
+                <td>{{ product.size }}</td>
+                <td>{{ product.brand }}</td>
+                <td>{{ product.sole }}</td>
                 <td>{{ product.stock }}</td>
               </tr>
             </tbody>
@@ -159,11 +175,27 @@ export default defineComponent({
         console.log("Dữ liệu trạng thái đơn hàng:", orderRes.data);
 
         bestSellingProducts.value = productRes.data.map((item, index) => ({
-          id: index + 1,
-          name: item.tenSanPham || item[1],
-          sold: item.soLuongBan || item[2]
-        }));
+  id: index + 1,
+  name: item.tenSanPham || item[1],
+  size: item.size || item[3],
+  color: item.mauSac || item[4],
+  brand: item.thuongHieu || item[5],
+  sole: item.deGiay || item[6],
+  sold: item.soLuongBan || item[2], // Chuyển xuống cuối
+}));
 
+        const statusColors = {
+          "Đã hủy": "#dc3545",         // Đỏ
+          "Hoàn thành": "#28a745",     // Xanh lá cây
+          "Đã thanh toán": "#00FF00",  // Xanh lá nhạt
+          "Chờ giao hàng": "#fd7e14",  // Cam
+          "Đã giao": "#007bff",        // Xanh dương
+          "Chờ xác nhận": "#ffc107",   // Vàng
+          "Đang vận chuyển": "#6f42c1",// Tím
+          "Chưa thanh toán": "#ff6384", // Hồng
+          "Chờ thanh toán": "#17a2b8",  // Xanh cyan
+          "Đang giao": "#8e44ad",       // Tím đậm
+        };
         // Tính tổng số đơn hàng
         const totalOrders = orderRes.data.reduce((sum, item) => sum + (item.tongDonHang || 0), 0);
 
@@ -173,7 +205,7 @@ export default defineComponent({
             data: orderRes.data.map(item =>
               totalOrders > 0 ? ((item.tongDonHang / totalOrders) * 100).toFixed(2) : 0
             ),
-            backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#007bff', '#17a2b8', '#6f42c1']
+            backgroundColor: orderRes.data.map(item => statusColors[item.trangThai] || "#6c757d") // Màu mặc định là xám nếu trạng thái không có trong danh sách
           }]
         };
       } catch (error) {
@@ -232,7 +264,11 @@ export default defineComponent({
         const response = await axios.get("http://localhost:8080/api/thong-ke/san-pham-sap-het-hang");
         lowStockProducts.value = response.data.map(item => ({
           name: item.tenSanPham,
-          stock: item.soLuong,
+          stock: item.mauSac,
+          color: item.size,
+          size: item.thuongHieu,
+          brand: item.deGiay,
+          sole: item.soLuong,
         }));
       } catch (error) {
         console.error("Lỗi khi lấy danh sách sản phẩm sắp hết hàng:", error);

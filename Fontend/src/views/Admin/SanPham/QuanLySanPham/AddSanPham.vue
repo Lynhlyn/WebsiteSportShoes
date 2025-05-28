@@ -11,8 +11,8 @@ const urlThuongHieu = `${BASE_URL}/thuong-hieu`;
 const urlChatLieu = `${BASE_URL}/chat-lieu`;
 const urlDeGiay = `${BASE_URL}/de-giay`;
 
-const hinhAnh = ref([]);
-const newImageUrl = ref("");
+const hinhAnh = ref([]); 
+const newImageUrl = ref(""); 
 const tenSanPham = ref("");
 const moTa = ref("");
 const danhMuc = ref("");
@@ -28,40 +28,6 @@ const deGiayList = ref([]);
 const isLoading = ref(false);
 const errors = ref({});
 
-// 🖼 **Xử lý chọn ảnh từ máy tính**
-const handleChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            hinhAnh.value.push(reader.result);
-        };
-        reader.readAsDataURL(file);
-    }
-};
-
-// 🌐 **Hàm kiểm tra URL ảnh hợp lệ**
-const isValidURL = (url) => {
-    const regex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp))$/i;
-    return regex.test(url);
-};
-
-// 📂 **Thêm ảnh bằng URL**
-const addImage = () => {
-    if (isValidURL(newImageUrl.value)) {
-        hinhAnh.value.push(newImageUrl.value);
-        newImageUrl.value = "";
-    } else {
-        alert("URL ảnh không hợp lệ!");
-    }
-};
-
-// ❌ **Xóa ảnh khỏi danh sách**
-const removeImage = (index) => {
-    hinhAnh.value.splice(index, 1);
-};
-
-// 🔍 **Tải dữ liệu danh mục, thương hiệu, chất liệu, đế giày**
 const fetchDropdownData = async () => {
     try {
         const [resDanhMuc, resThuongHieu, resChatLieu, resDeGiay] = await Promise.all([
@@ -79,11 +45,35 @@ const fetchDropdownData = async () => {
     }
 };
 
-// ✅ **Kiểm tra dữ liệu nhập**
+const isValidURL = (url) => {
+    const regex = /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp))$/i;
+    return regex.test(url);
+};
+
+const addImage = () => {
+    if (isValidURL(newImageUrl.value)) {
+        hinhAnh.value.push(newImageUrl.value);
+        newImageUrl.value = "";
+    } else {
+        alert("URL ảnh không hợp lệ!");
+    }
+};
+
+const removeImage = (index) => {
+    hinhAnh.value.splice(index, 1);
+};
+
 const validateForm = () => {
     errors.value = {};
     if (!hinhAnh.value.length) {
         errors.value.hinhAnh = "Vui lòng thêm ít nhất một ảnh sản phẩm";
+    } else {
+        for (const url of hinhAnh.value) {
+            if (!isValidURL(url)) {
+                errors.value.hinhAnh = "Tất cả ảnh phải là URL hợp lệ";
+                break;
+            }
+        }
     }
     if (!tenSanPham.value) errors.value.tenSanPham = "Tên sản phẩm không được để trống";
     if (!moTa.value || moTa.value.length < 25) errors.value.moTa = "Mô tả phải có ít nhất 25 ký tự";
@@ -94,41 +84,9 @@ const validateForm = () => {
 
     return Object.keys(errors.value).length === 0;
 };
-// 🚀 **Gửi dữ liệu lên API**
-const uploadImage = async (file) => {
-    try {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await axios.post("http://localhost:8080/san-pham/upload", formData, {
-            headers: { "Content-Type": "multipart/form-data" }
-        });
-
-        return response.data; // Trả về URL ảnh
-    } catch (error) {
-        console.error("Lỗi upload ảnh:", error);
-        return null;
-    }
-};
 
 const handleAddSanPham = async () => {
     if (!validateForm()) return;
-
-    // 🖼 Upload từng ảnh lên server trước
-    const uploadedImages = await Promise.all(
-        hinhAnh.value.map(async (base64) => {
-            const file = dataURLtoFile(base64, "image.jpg"); // Convert base64 -> File
-            return await uploadImage(file);
-        })
-    );
-
-    // Lọc bỏ ảnh lỗi (null)
-    const validImageUrls = uploadedImages.filter(url => url !== null);
-
-    if (validImageUrls.length === 0) {
-        alert("Upload ảnh thất bại!");
-        return;
-    }
 
     const newSanPham = {
         tenSanPham: tenSanPham.value,
@@ -140,56 +98,49 @@ const handleAddSanPham = async () => {
         trangThai: trangThai.value,
     };
 
+    isLoading.value = true;
     try {
-        await axios.post(urlSanPham, newSanPham, {
-            params: { urlAnh: validImageUrls } // ✅ Gửi danh sách URL thay vì base64
+        const response = await axios.post(urlSanPham, newSanPham, {
+            params: { urlAnh: hinhAnh.value } // Truyền danh sách ảnh trong request param
         });
         alert("Thêm sản phẩm thành công!");
+        console.log("Sản phẩm thêm thành công: ", response.data);
         router.push('/admin/products/manage');
     } catch (error) {
-        console.error("❌ Lỗi API:", error.response?.data || error);
+        errors.value.apiError = error.response?.data || "Có lỗi xảy ra!";
+    } finally {
+        isLoading.value = false;
     }
 };
-
-// ⚡️ Convert base64 -> File
-const dataURLtoFile = (dataurl, filename) => {
-    let arr = dataurl.split(",");
-    let mime = arr[0].match(/:(.*?);/)[1];
-    let bstr = atob(arr[1]);
-    let n = bstr.length;
-    let u8arr = new Uint8Array(n);
-
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-};
-
 
 onMounted(fetchDropdownData);
 </script>
-
 
 <template>
     <div class="container">
         <h2 class="text-center mt-4">Thêm sản phẩm mới</h2>
 
         <div class="card form-container shadow-lg">
-                    <form @submit.prevent="handleAddSanPham">
-                        <!-- 📂 Upload file ảnh -->
-                        <div class="mb-3">
-                            <label class="form-label">Thêm ảnh sản phẩm</label>
-                            <input type="file" class="form-control" @change="handleChange" accept="image/*">
-                            <small v-if="errors.hinhAnh" class="text-danger">{{ errors.hinhAnh }}</small>
+            <form @submit.prevent="handleAddSanPham">
+                <!-- Input nhập URL ảnh -->
+                <div class="mb-3">
+                    <label class="form-label">Thêm ảnh sản phẩm</label>
+                    <div class="d-flex gap-2">
+                        <input v-model="newImageUrl" type="text" class="form-control" placeholder="Nhập URL ảnh">
+                        <button type="button" class="btn btn-primary" @click="addImage">Thêm</button>
+                    </div>
+                    <small v-if="errors.hinhAnh" class="text-danger">{{ errors.hinhAnh }}</small>
+                </div>
+                <!-- Hiển thị danh sách ảnh đã thêm -->
+                <div class="mb-3">
+                    <label class="form-label">Danh sách ảnh</label>
+                    <div class="image-preview-container">
+                        <div v-for="(img, index) in hinhAnh" :key="index" class="image-preview">
+                            <img :src="img" alt="Ảnh sản phẩm" class="img-thumbnail">
+                            <button type="button" class="btn btn-danger btn-sm" @click="removeImage(index)">Xóa</button>
                         </div>
-
-                        <!-- 🖼 Danh sách ảnh -->
-                        <div class="image-preview-container">
-                            <div v-for="(img, index) in hinhAnh" :key="index" class="image-preview">
-                                <img :src="img" class="img-thumbnail">
-                                <button type="button" class="btn btn-danger btn-sm" @click="removeImage(index)">Xóa</button>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                 <div class="mb-3">
                     <label class="form-label">Tên sản phẩm</label>
                     <input v-model="tenSanPham" type="text" class="form-control" placeholder="Nhập tên sản phẩm">
@@ -259,6 +210,8 @@ onMounted(fetchDropdownData);
                 </div>
             </form>
         </div>
+
+        
     </div>
 </template>
 

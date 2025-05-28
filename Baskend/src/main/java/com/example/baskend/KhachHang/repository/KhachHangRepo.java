@@ -1,12 +1,12 @@
 package com.example.baskend.KhachHang.repository;
 
 import com.example.baskend.KhachHang.entity.KhachHang;
-import com.example.baskend.SanPham.KhuyenMai.entity.KhuyenMai;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface KhachHangRepo extends JpaRepository<KhachHang, Integer> {
@@ -15,5 +15,11 @@ public interface KhachHangRepo extends JpaRepository<KhachHang, Integer> {
     boolean existsByMaKhachHang(String maKhachHang);
     boolean existsBySoDienThoai(String soDienThoai);
     List<KhachHang> findByTrangThai(Boolean trangThai);
+
+    Optional<KhachHang> findByTaiKhoan_Id(Integer taiKhoanId);
+
+    @Query("SELECT MAX(kh.maKhachHang) FROM KhachHang kh")
+    String findMaxMaKhachHang();
+  //  public Optional<KhachHang> findByMaKhachHang(String maKhachHang);
 
 }

@@ -23,8 +23,7 @@ public class SanPhamChiTiet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "Mã sản phẩm chi tiết không được để trống")
-    @Column(name = "ma_spct", unique = true) // Thêm unique constraint nếu mã sản phẩm phải duy nhất
+    @Column(name = "ma_spct") // Thêm unique constraint nếu mã sản phẩm phải duy nhất
     private String maSPCT;
 
     @NotNull(message = "Sản phẩm không được để trống")
@@ -37,7 +36,6 @@ public class SanPhamChiTiet {
     @JoinColumn(name = "id_mau_sac", referencedColumnName = "id")
     private MauSac mauSac;
 
-    @NotNull(message = "Khuyến mãi không được để trống")
     @ManyToOne
     @JoinColumn(name = "id_khuyen_mai", referencedColumnName = "id")
     private KhuyenMai khuyenMai;

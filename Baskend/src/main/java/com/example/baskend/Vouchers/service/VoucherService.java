@@ -89,4 +89,11 @@ public class VoucherService {
         return vouchers;
     }
 
+    public VoucherService(VoucherRepository voucherRepo) {
+        this.voucherRepository = voucherRepo;
+    }
+
+    public Optional<Voucher> findByMaVoucher(String maVoucher) {
+        return voucherRepository.findByMaVoucher(maVoucher);
+    }
 }

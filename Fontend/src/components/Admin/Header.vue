@@ -22,7 +22,7 @@ const handleLogout = () => {
   <div class="header-container">
     <!-- Logo & Title -->
     <div class="d-flex align-items-center">
-      <img src="/src/assets/logo/logo.png" alt="Logo" class="logo me-3" />
+      <img src="/src/assets/logo/logo1.jpg" alt="Logo" class="logo me-3" />
       <h3 class="title mb-0">{{ props.titleHeader }}</h3>
     </div>
 

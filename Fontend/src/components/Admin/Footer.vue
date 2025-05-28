@@ -3,7 +3,7 @@
 <template>
   <div class="footer-container">
     <!-- Logo -->
-    <img src="/src/assets/logo/logo4.png" alt="Logo" class="logo me-3" />
+    <img src="/src/assets/logo/logo1.jpg" alt="Logo" class="logo me-3" />
 
     <!-- Chữ cạnh logo -->
     <div class="footer-text-container">

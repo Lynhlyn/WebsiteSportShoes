@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class KhachHangResponse {
     private Integer id;
+    private String taiKhoan;
+    private Integer idTk;
     private String maKhachHang;
-    private String tenDangNhap;
     private String hoTen;
     private Boolean gioiTinh;
     private String email;
-    private String matKhau;
     private String soDienThoai;
     private Boolean trangThai;
     private LocalDateTime ngayTao;

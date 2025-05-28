@@ -6,6 +6,9 @@ import com.example.baskend.KhachHang.entity.KhachHang;
 import com.example.baskend.KhachHang.repository.KhachHangRepo;
 import com.example.baskend.SanPham.SanPhamChiTiet.entity.SanPhamChiTiet;
 import com.example.baskend.SanPham.SanPhamChiTiet.repository.SanPhamChiTietRepo;
+import com.example.baskend.Vouchers.entity.Voucher;
+import com.example.baskend.Vouchers.repository.VoucherRepository;
+import com.example.baskend.Vouchers.service.VoucherService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,8 @@ import java.util.List;
 public class GioHangController {
 
     private final GioHangRepo gioHangRepo;
+
+    private final VoucherRepository voucherRepository;
     private final SanPhamChiTietRepo sanPhamChiTietRepo;
     private final KhachHangRepo khachHangRepo;
 
@@ -62,5 +67,38 @@ public class GioHangController {
         gioHang.setSoLuong(soLuong);
         gioHangRepo.save(gioHang);
         return ResponseEntity.ok("Số lượng sản phẩm đã được cập nhật");
+    }
+
+    @PostMapping("/apply-voucher")
+    public ResponseEntity<?> applyVoucher(@RequestParam Integer khachHangId, @RequestParam String maVoucher) {
+        KhachHang khachHang = khachHangRepo.findById(khachHangId)
+                .orElseThrow(() -> new RuntimeException("Khách hàng không tồn tại"));
+
+        Voucher voucher = voucherRepository.findByMaVoucher(maVoucher)
+                .orElseThrow(() -> new RuntimeException("Voucher không hợp lệ hoặc không tồn tại"));
+
+        List<GioHang> gioHangList = gioHangRepo.findByKhachHangId(khachHangId);
+        if (gioHangList.isEmpty()) {
+            return ResponseEntity.badRequest().body("Giỏ hàng trống, không thể áp dụng voucher");
+        }
+
+        double tongTien = gioHangList.stream()
+                .mapToDouble(item -> item.getSanPhamChiTiet().getGiaBan() * item.getSoLuong())
+                .sum();
+
+        if (tongTien < voucher.getGiaTriToiThieu()) {
+            return ResponseEntity.badRequest().body("Tổng giá trị giỏ hàng chưa đạt mức tối thiểu để áp dụng voucher");
+        }
+
+        double giamGia;
+        if (voucher.getLoaiVoucher() == 1) { // Giảm theo phần trăm
+            giamGia = Math.min(voucher.getGiaTriToiDa(), voucher.getGiaTriToiThieu() * voucher.getGiaTriGiam() / 100);
+        } else { // Giảm theo số tiền
+            giamGia = Math.min(voucher.getGiaTriToiDa(), voucher.getGiaTriGiam());
+        }
+
+        double tongTienSauGiam = tongTien - giamGia;
+
+        return ResponseEntity.ok("Tổng tiền trước giảm: " + tongTien + ", Giảm giá: " + giamGia + ", Tổng tiền sau giảm: " + tongTienSauGiam);
     }
 }

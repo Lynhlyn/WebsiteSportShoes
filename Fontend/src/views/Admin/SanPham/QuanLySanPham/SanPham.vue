@@ -59,9 +59,9 @@ const fetchSanPham = async () => {
                 ...sp,
                 ngayTao: sp.ngayTao ? new Date(sp.ngayTao).toLocaleDateString("vi-VN") : "Không có",
                 ngaySua: sp.ngaySua ? new Date(sp.ngaySua).toLocaleDateString("vi-VN") : "Không có",
-                urlAnh: sp.anhDauTien && isValidURL(sp.anhDauTien)
-                    ? sp.anhDauTien
-                    : 'https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg'
+                urlAnh: sp.anhDauTien && isValidURL(sp.anhDauTien) 
+                          ? sp.anhDauTien 
+                          : 'https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg'
             }));
         } else {
             throw new Error("API trả về dữ liệu không hợp lệ");
@@ -262,7 +262,6 @@ onMounted(() => {
                 <input v-model="searchQuery" class="form-control" type="text"
                     placeholder="Tìm kiếm sản phẩm theo tên..." @click="fetchSanPham" />
             </div>
-            <button class="btn btn-info ms-2" @click="exportToExcel">Xuất Excel</button>
             <button class="btn btn-success" @click="handleAddSanPham">
                 <i class="bi bi-plus-circle"></i> Thêm mới
             </button>
@@ -346,7 +345,7 @@ onMounted(() => {
                             {{ sanPham.trangThai ? 'Hoạt động' : 'Ngừng bán' }}
                         </span>
                     </td>
-
+                    
 
                     <td class="text-center">
                         <div class="d-flex justify-content-center gap-2">

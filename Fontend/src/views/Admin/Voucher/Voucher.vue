@@ -76,7 +76,6 @@
             </td>
             <td>{{ voucher.giaTriToiThieu }}đ</td>
             <td>{{ voucher.giaTriGiamToiDa }}đ</td>
-
             <td>{{ voucher.soLuong }}</td>
             <td>{{ formatDate(voucher.ngayBatDau) }}</td>
             <td>{{ formatDate(voucher.ngayKetThuc) }}</td>
@@ -89,9 +88,6 @@
               <div class="d-flex justify-content-center">
                 <button class="btn btn-light btn-sm" @click="navigateToEditVoucher(voucher.id)">
                   <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-danger btn-sm ms-2" @click="deleteVoucher(voucher.id)">
-                  <i class="bi bi-trash"></i>
                 </button>
               </div>
             </td>
@@ -144,6 +140,7 @@ export default {
       pageSize: 5,
     };
   },
+  
   computed: {
     totalPages() {
       return Math.ceil(this.vouchers.length / this.pageSize);
@@ -181,12 +178,18 @@ export default {
         this.vouchers = response.data.map(v => {
           const startDate = new Date(v.ngayBatDau);
           const endDate = new Date(v.ngayKetThuc);
-          let trangThai = endDate < today ? 0 : startDate > today ? 0 : 1;
+          let trangThai = 1; // Mặc định là "Đang diễn ra"
 
-          // Tính giá trị giảm tối đa
-          let giaTriGiamToiDa = Number(v.loaiVoucher) === 1
-            ? v.giaTriGiam
-            : v.giaTriToiThieu * (v.giaTriGiam / 100);
+          if (v.soLuong === 0 || endDate < today) {
+            trangThai = 0; // Nếu hết số lượng hoặc quá hạn, trạng thái là "Đã kết thúc"
+          } else if (startDate > today) {
+            trangThai = 0; // Nếu chưa đến ngày bắt đầu, trạng thái là "Chưa bắt đầu"
+          }
+
+          // Cập nhật cách tính giá trị giảm tối đa
+          let giaTriGiamToiDa = v.loaiVoucher === 0
+            ? (v.giaTriToiThieu * v.giaTriGiam) / 100
+            : v.giaTriGiam;
 
           return {
             ...v,
@@ -202,6 +205,7 @@ export default {
         console.error('Lỗi khi lấy danh sách voucher:', error);
       }
     },
+
     async searchVouchers() {
       try {
         const params = {
@@ -216,14 +220,18 @@ export default {
         const response = await axios.get('http://localhost:8080/admin/searchByMaAndMoTa', { params });
 
         this.vouchers = response.data.map(v => {
+          let giaTriGiamToiDa = v.loaiVoucher === 0
+            ? (v.giaTriToiThieu * v.giaTriGiam) / 100
+            : v.giaTriGiam;
+
           return {
             ...v,
-            trangThai,
+            trangThai: Number(v.trangThai),
             kieuVoucher: v.kieuVoucher,
             loaiVoucher: Number(v.loaiVoucher),
             giaTriGiam: this.formatCurrency(v.giaTriGiam),
             giaTriToiThieu: this.formatCurrency(v.giaTriToiThieu),
-            giaTriGiamToiDa: this.formatCurrency(v.giaTriGiamToiDa),
+            giaTriGiamToiDa: this.formatCurrency(giaTriGiamToiDa),
           };
         });
 
@@ -288,16 +296,6 @@ export default {
     },
     changePage(page) {
       this.currentPage = page;
-    },
-    async deleteVoucher(id) {
-      if (confirm("Bạn có chắc chắn muốn xóa voucher này không?")) {
-        try {
-          await axios.delete(`http://localhost:8080/admin/voucher/${id}`);
-          this.fetchVouchers(); // Tải lại danh sách sau khi xóa
-        } catch (error) {
-          console.error("Lỗi khi xóa voucher:", error);
-        }
-      }
     }
 
   },

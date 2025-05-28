@@ -8,7 +8,7 @@ const chatLieuList = ref([]);
 const deGiayList = ref([]);
 const mauSacList = ref([]);
 const sizeList = ref([]);
-const khuyenMaiList = ref([]);
+// const khuyenMaiList = ref([]);
 const sanPhamList = ref([]);
 const spctList = ref([]);
 const loading = ref(false);
@@ -54,27 +54,18 @@ const fetchData = async () => {
         deGiayList.value = responses[3].data || [];
         mauSacList.value = responses[4].data || [];
         sizeList.value = responses[5].data || [];
-        khuyenMaiList.value = responses[6].data || [];
+        // khuyenMaiList.value = responses[6].data || [];
         spctList.value = responses[8].data || [];
 
         sanPhamList.value = (responses[7].data || []).map((product) => {
             const spct = spctList.value.find(sp => sp.sanPham.id === product.id);
-            console.log(`Sản phẩm ID ${product.id} - Chi tiết sản phẩm`, spct);
-
-            const khuyenMai = spct?.khuyenMai ? khuyenMaiList.value.find(km => km.id == spct.khuyenMai.id) : null;
-            console.log(`Khuyến mãi của sản phẩm ${product.id}:`, khuyenMai);
-
             const giaGoc = spct?.giaBan ?? 0;
-            const phanTramGiam = khuyenMai?.phanTramGiamGia ?? 0;
-            console.log(`Sản phẩm ID ${product.id} - Giá gốc: ${giaGoc}, Giảm giá: ${phanTramGiam}`);
-
-            const giaKhuyenMai = phanTramGiam > 0 ? giaGoc * (1 - phanTramGiam / 100) : null;
+            
 
             return {
                 ...product,
                 giaBan: giaGoc > 0 ? giaGoc : 'Liên hệ',
-                giaKhuyenMai: giaKhuyenMai || null,
-                phanTramGiam: phanTramGiam > 0 ? phanTramGiam : null,
+              
                 urlAnh: isValidURL(product.anhDauTien) ? product.anhDauTien
                     : "https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg"
             };
@@ -115,20 +106,13 @@ const filterByDanhMuc = async () => {
             const spct = spctList.value.find(sp => sp.sanPham.id === product.id);
             console.log(` Sản phẩm ID ${product.id} - Chi tiết sản phẩm`, spct);
 
-            const khuyenMai = spct?.khuyenMai ? khuyenMaiList.value.find(km => km.id == spct.khuyenMai.id) : null;
-            console.log(` Khuyến mãi sản phẩm ${product.id}:`, khuyenMai);
-
+            
             const giaGoc = spct?.giaBan ?? 0;
-            const phanTramGiam = khuyenMai?.phanTramGiamGia ?? 0;
-            console.log(` Sản phẩm ID ${product.id} - Giá gốc: ${giaGoc}, Giảm giá: ${phanTramGiam}%`);
-
-            const giaKhuyenMai = phanTramGiam > 0 ? giaGoc * (1 - phanTramGiam / 100) : null;
-
+           
             return {
                 ...product,
                 giaBan: giaGoc > 0 ? giaGoc : "Liên hệ",
-                giaKhuyenMai: giaKhuyenMai || null,
-                phanTramGiam: phanTramGiam > 0 ? phanTramGiam : null,
+               
                 urlAnh: isValidURL(product.anhDauTien) ? product.anhDauTien
                     : "https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg"
             };
@@ -161,17 +145,15 @@ const filterByMauSacAndSize = async () => {
         sanPhamList.value = filteredProducts.map((spct) => {
             const product = spct.sanPham;
 
-            const khuyenMai = spct.khuyenMai ? khuyenMaiList.value.find(km => km.id == spct.khuyenMai.id) : null;
+           
 
             const giaGoc = spct.giaBan ?? 0;
-            const phanTramGiam = khuyenMai?.phanTramGiamGia ?? 0;
-            const giaKhuyenMai = phanTramGiam > 0 ? giaGoc * (1 - phanTramGiam / 100) : null;
+          
 
             return {
                 ...product,
                 giaBan: giaGoc > 0 ? giaGoc : "Liên hệ",
-                giaKhuyenMai: giaKhuyenMai || null,
-                phanTramGiam: phanTramGiam > 0 ? phanTramGiam : null,
+               
                 urlAnh: isValidURL(product.anhDauTien) ? product.anhDauTien
                     : "https://supersports.com.vn/cdn/shop/files/3WF10042998-1.jpg"
             };
