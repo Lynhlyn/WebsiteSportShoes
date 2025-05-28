@@ -18,6 +18,8 @@ public interface KhachHangRepo extends JpaRepository<KhachHang, Integer> {
 
     Optional<KhachHang> findByTaiKhoan_Id(Integer taiKhoanId);
 
+    Optional<KhachHang> findByTaiKhoan_TenDangNhap(String tenDangNhap);
+
     @Query("SELECT MAX(kh.maKhachHang) FROM KhachHang kh")
     String findMaxMaKhachHang();
   //  public Optional<KhachHang> findByMaKhachHang(String maKhachHang);

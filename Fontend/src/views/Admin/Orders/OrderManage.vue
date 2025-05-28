@@ -208,18 +208,17 @@ export default {
   computed: {
     // Lọc đơn hàng theo tìm kiếm, nhân viên, trạng thái và phương thức thanh toán
     filteredOrders() {
-      let filtered = this.orders;
-      // filtered = filtered.filter(order => order.loaiDonHang === false);
-
-      // Lọc theo tìm kiếm
-      if (this.search) {
-        const searchLower = this.search.toLowerCase().trim();
-        filtered = filtered.filter((order) => {
-          const maDonHangLower = order.maDonHang?.toLowerCase() || "";
-          const tenKhachHangLower = order.khachHang?.hoTen.toLowerCase() || "";
-          return maDonHangLower.includes(searchLower) || tenKhachHangLower.includes(searchLower);
-        });
-      }
+          let filtered = this.orders;
+          filtered = filtered.filter(order => order.loaiDonHang === false);
+          // Lọc theo tìm kiếm
+          if (this.search) {
+            const searchLower = this.search.toLowerCase().trim();
+            filtered = filtered.filter((order) => {
+              const maDonHangLower = order.maDonHang?.toLowerCase() || "";
+              const tenKhachHangLower = order.khachHang?.hoTen.toLowerCase() || "";
+              return maDonHangLower.includes(searchLower) || tenKhachHangLower.includes(searchLower);
+            });
+          }
 
       // Lọc theo nhân viên
       if (this.employeeFilter) {
@@ -349,7 +348,6 @@ export default {
               minute: "2-digit",
               hour12: false // 24-hour format
             }) : "Không có";
-            order.loaiDonHang = 0;
           return order;
         });
       } catch (error) {

@@ -1,5 +1,7 @@
 package com.example.baskend.TaiKhoan.Service;
 
+import com.example.baskend.KhachHang.entity.KhachHang;
+import com.example.baskend.KhachHang.repository.KhachHangRepo;
 import com.example.baskend.TaiKhoan.DTO.LoginRequest;
 import com.example.baskend.TaiKhoan.DTO.LoginResponse;
 import com.example.baskend.TaiKhoan.DTO.RegisterRequest;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -22,10 +25,14 @@ public class AuthService {
     private TaiKhoanRepo taiKhoanRepo;
 
     @Autowired
+    private KhachHangRepo khachHangRepo;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     public LoginResponse login(LoginRequest request) {
         TaiKhoan taiKhoan = taiKhoanRepo.findByTenDangNhap(request.getTenDangNhap());
+        Optional<KhachHang> khachHang = khachHangRepo.findByTaiKhoan_TenDangNhap(request.getTenDangNhap());
 
         if (taiKhoan == null) {
             throw new RuntimeException("Tài khoản không tồn tại");
@@ -42,11 +49,19 @@ public class AuthService {
         // Generate JWT token (you can implement this part based on your needs)
         String token = generateToken(taiKhoan);
 
+        String tenKhachHang = null;
+        if (taiKhoan.getVaiTro() != null && taiKhoan.getVaiTro().getId() == 3) {
+            tenKhachHang = khachHangRepo.findByTaiKhoan_Id(taiKhoan.getId())
+                    .map(KhachHang::getHoTen)
+                    .orElse(null);
+        }
+
         return new LoginResponse(
                 taiKhoan.getId(),
                 taiKhoan.getTenDangNhap(),
                 taiKhoan.getVaiTro(),
-                token
+                token,
+                tenKhachHang
         );
     }
 

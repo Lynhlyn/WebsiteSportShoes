@@ -35,7 +35,7 @@
         <div class="col-6 col-md-3">
           <select v-model="customerFilter" class="form-select">
             <option value="">👥 Khách hàng</option>
-            <option v-for="customer in customers" :key="customer.taiKhoanId" :value="customer.taiKhoanId">{{
+            <option v-for="customer in customers" :key="customer.id" :value="customer.id">{{
               customer.hoTen }}</option>
           </select>
         </div>
@@ -61,7 +61,7 @@
             <tr v-for="order in paginatedOrders" :key="order.id">
               <td>{{ order.id }}</td>
               <td class="fw-bold text-primary">{{ order.maDonHang }}</td>
-              <td>{{ order.khachHang?.taiKhoan?.tenDangNhap || 'Khách vãng lai' }}</td>
+              <td>{{ order.khachHang?.hoTen || 'Khách vãng lai' }}</td>
               <td>{{ order.phuongThucThanhToan?.tenPhuongThuc || 'Chưa chọn' }}</td>
               <td>{{ order.ngayTaoFormatted }}</td>
               <td class="text-success fw-bold">{{ order.tongTien?.toLocaleString() || '0' }} đ</td>
@@ -144,7 +144,7 @@ export default {
         const searchLower = this.search.toLowerCase().trim();
         filtered = filtered.filter((order) => {
           const maDonHangLower = order.maDonHang?.toLowerCase() || "";
-          const tenKhachHangLower = order.khachHang?.hoTen.toLowerCase() || "";
+          const tenKhachHangLower = order.khachHang?.hoTen?.toLowerCase() || "";
           return maDonHangLower.includes(searchLower) || tenKhachHangLower.includes(searchLower);
         });
       }
@@ -155,7 +155,7 @@ export default {
       }
       // Lọc theo khách hàng
       if (this.customerFilter) {
-        filtered = filtered.filter(order => order.khachHang?.taiKhoanId === this.customerFilter);
+        filtered = filtered.filter(order => order.khachHang?.id === this.customerFilter);
       }
 
       // Lọc theo khoảng ngày (startDate và endDate)
@@ -209,37 +209,35 @@ export default {
     },
   },
   methods: {
-    methods: {
-      async searchOrders() {
-        try {
-          console.log("Start Date: ", this.startDate);  // Log kiểm tra
-          console.log("End Date: ", this.endDate);      // Log kiểm tra
+    async searchOrders() {
+      try {
+        console.log("Start Date: ", this.startDate);  // Log kiểm tra
+        console.log("End Date: ", this.endDate);      // Log kiểm tra
 
-          // Chuyển đổi startDate và endDate sang ISO String với thời gian rõ ràng
-          const start = this.startDate ? new Date(this.startDate + "T00:00:00").toISOString() : null; // Set thời gian bắt đầu là 00:00:00
-          const end = this.endDate ? new Date(this.endDate + "T23:59:59").toISOString() : null;       // Set thời gian kết thúc là 23:59:59
+        // Chuyển đổi startDate và endDate sang ISO String với thời gian rõ ràng
+        const start = this.startDate ? new Date(this.startDate + "T00:00:00").toISOString() : null; // Set thời gian bắt đầu là 00:00:00
+        const end = this.endDate ? new Date(this.endDate + "T23:59:59").toISOString() : null;       // Set thời gian kết thúc là 23:59:59
 
-          console.log("Start Date formatted: ", start);  // Kiểm tra ISO String
-          console.log("End Date formatted: ", end);        // Kiểm tra ISO String
+        console.log("Start Date formatted: ", start);  // Kiểm tra ISO String
+        console.log("End Date formatted: ", end);        // Kiểm tra ISO String
 
-          // Tạo đối tượng params với các giá trị đã chuyển đổi
-          const params = {
-            search: this.search || null,
-            startDate: start,  // Đảm bảo rằng ngày được gửi đúng định dạng
-            endDate: end,        // Đảm bảo rằng ngày được gửi đúng định dạng
-            customerId: this.customerFilter || null,
-          };
+        // Tạo đối tượng params với các giá trị đã chuyển đổi
+        const params = {
+          search: this.search || null,
+          startDate: start,  // Đảm bảo rằng ngày được gửi đúng định dạng
+          endDate: end,        // Đảm bảo rằng ngày được gửi đúng định dạng
+          customerId: this.customerFilter || null,
+        };
 
-          // Gửi request lên backend
-          const response = await axios.get('http://localhost:8080/don-hang/searchByDateRange', { params });
-          console.log("Sending request with params:", params);  // Kiểm tra các tham số gửi lên
-          this.orders = response.data; // Cập nhật dữ liệu đơn hàng với dữ liệu trả về
-        } catch (error) {
-          console.error("Lỗi khi tìm kiếm đơn hàng:", error);
-        }
+        // Gửi request lên backend
+        const response = await axios.get('http://localhost:8080/don-hang/searchByDateRange', { params });
+        console.log("Sending request with params:", params);  // Kiểm tra các tham số gửi lên
+        this.orders = response.data; // Cập nhật dữ liệu đơn hàng với dữ liệu trả về
+      } catch (error) {
+        console.error("Lỗi khi tìm kiếm đơn hàng:", error);
       }
-
     },
+
     calculateDiscount() {
       const order = this.selectedOrder && this.selectedOrder.donHang;
       if (!order || !order.voucher) return 0;  // Nếu không có voucher, trả về 0
@@ -260,15 +258,17 @@ export default {
       // Trả về giá trị giảm sau khi tính toán
       return discount;
     },
-    // Lấy danh sách khách hàng từ API
-    async fetchCustomers(taiKhoanId) {
+
+    // Lấy danh sách tất cả khách hàng từ API
+    async fetchCustomers() {
       try {
-        const response = await axios.get(`http://localhost:8080/khach-hang/account/${taiKhoanId}`);
-        this.customers = [response.data]; // Assuming response is a single customer object
+        const response = await axios.get('http://localhost:8080/khach-hang');
+        this.customers = response.data;
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin khách hàng:", error);
+        console.error("Lỗi khi lấy danh sách khách hàng:", error);
       }
     },
+
     async fetchOrders() {
       try {
         const response = await axios.get("http://localhost:8080/don-hang");
@@ -291,6 +291,7 @@ export default {
         console.error("Error fetching orders:", error);
       }
     },
+
     async detailOrder(id) {
       try {
         const response = await axios.get(`http://localhost:8080/don-hang-chi-tiet/${id}`);
@@ -376,19 +377,22 @@ export default {
     }
   },
 
-  mounted() {
-    const savedOrder = localStorage.getItem("recentOrder");
-    if (savedOrder) {
-      this.order = JSON.parse(savedOrder);  // Parse and store the order
-    } else {
-      alert("Không tìm thấy đơn hàng!");
-    }
-    const taiKhoanId = 1;
-    this.fetchCustomers(taiKhoanId);
-    this.fetchOrders();
+  async mounted() {
+    // Bỏ phần check localStorage vì không cần thiết cho trang quản lý đơn hàng
+    // const savedOrder = localStorage.getItem("recentOrder");
+    // if (savedOrder) {
+    //   this.order = JSON.parse(savedOrder);  // Parse and store the order
+    // } else {
+    //   alert("Không tìm thấy đơn hàng!");
+    // }
+    
+    // Lấy danh sách khách hàng và đơn hàng
+    await this.fetchCustomers();
+    await this.fetchOrders();
   },
 };
 </script>
+
 
 
 <style scoped>

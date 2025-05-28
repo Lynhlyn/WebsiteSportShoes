@@ -13,4 +13,5 @@ public class LoginResponse {
     private String tenDangNhap;
     private VaiTro vaiTro;
     private String token;
+    private String tenKhachHang;
 }

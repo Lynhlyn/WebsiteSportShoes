@@ -171,6 +171,10 @@ const tinhPhiVanChuyen = () => {
     }
 };
 
+// Thêm biến để lưu thông tin khách hàng
+const khachHangInfo = ref(null); // 🔥 Thêm biến này để lưu thông tin khách hàng
+
+// Sửa lại hàm layThongTinNguoiDung
 const layThongTinNguoiDung = async () => {
     try {
         // Lấy thông tin người dùng từ localStorage
@@ -180,13 +184,16 @@ const layThongTinNguoiDung = async () => {
             const response = await axios.get(`http://localhost:8080/khach-hang/account/${user.id}`);
             const khachHang = response.data;
             
+            // 🔥 LƯU THÔNG TIN KHÁCH HÀNG VÀO BIẾN
+            khachHangInfo.value = khachHang;
+            
             // Điền dữ liệu vào các trường thông tin
-            hoTen.value = khachHang.hoTen || '';  // Điền Họ tên
-            sdt.value = khachHang.soDienThoai || '';  // Điền Số điện thoại
-            diaChi.value = khachHang.diaChiChiTiet || '';  // Optional
-            tinh.value = khachHang.diaChi?.tinh || '';  // Optional
-            quan.value = khachHang.diaChi?.quan || '';  // Optional
-            xa.value = khachHang.diaChi?.xa || '';  // Optional
+            hoTen.value = khachHang.hoTen || '';
+            sdt.value = khachHang.soDienThoai || '';
+            diaChi.value = khachHang.diaChiChiTiet || '';
+            tinh.value = khachHang.diaChi?.tinh || '';
+            quan.value = khachHang.diaChi?.quan || '';
+            xa.value = khachHang.diaChi?.xa || '';
         } else {
             console.error("Không có thông tin người dùng.");
         }
@@ -195,7 +202,7 @@ const layThongTinNguoiDung = async () => {
     }
 };
 
-// Kiểm tra thông tin khách hàng trước khi thanh toán
+// Sửa lại hàm handlePayment
 const handlePayment = async () => {
     // Kiểm tra các trường thông tin
     if (!hoTen.value || !sdt.value || !diaChi.value || !tinh.value || !quan.value || !xa.value) {
@@ -215,9 +222,18 @@ const handlePayment = async () => {
         return;
     }
 
-    // Tạo đối tượng khách hàng với ID lấy từ backend
+    // 🔥 KIỂM TRA THÔNG TIN KHÁCH HÀNG
+    if (!khachHangInfo.value) {
+        alert("⚠️ Không tìm thấy thông tin khách hàng!");
+        return;
+    }
+
+    // 🔥 SỬ DỤNG ID KHÁCH HÀNG THAY VÌ ID USER
     const khachHang = {
-        id: user.id,  // Lấy id khách hàng từ thông tin đăng nhập
+        id: khachHangInfo.value.id,  // 🔥 Sử dụng ID khách hàng từ API response
+        maKhachHang: khachHangInfo.value.maKhachHang, // Thêm mã khách hàng
+        hoTen: hoTen.value,
+        soDienThoai: sdt.value,
         diaChiChiTiet: diaChi.value,
         diaChi: {
             tinh: tinh.value,
@@ -225,42 +241,42 @@ const handlePayment = async () => {
             xa: xa.value
         },
         taiKhoan: {
-            tenDangNhap: user?.tenDangNhap || null
+            id: user.id, // ID tài khoản
+            tenDangNhap: user.tenDangNhap
         }
     };
 
-    // Tạo đối tượng phương thức thanh toán với ID hợp lệ
+    // Tạo đối tượng phương thức thanh toán
     const phuongThucThanhToan = {
-        id: 1,  // Đảm bảo phuongThucThanhToan có id hợp lệ
+        id: 1,
         tenPhuongThuc: selectedPaymentMethod.value
     };
 
-    // Tạo đối tượng voucher nếu có (có thể là null hoặc một voucher cụ thể)
-    const voucher = selectedVoucher.value ? {
-        id: selectedVoucher.value.id,  // Sử dụng ID voucher đã chọn
+    // Tạo đối tượng voucher nếu có
+const voucher = selectedVoucher.value ? {
+        id: selectedVoucher.value.id,
         maVoucher: selectedVoucher.value.maVoucher,
         moTa: selectedVoucher.value.moTa,
         giaTriGiam: selectedVoucher.value.giaTriGiam
     } : null;
 
-    // const recentOrder = JSON.parse(localStorage.getItem("recentOrder")) || [];
-
-    // Tạo đối tượng đơn hàng từ các thông tin cần thiết
+    // Tạo đối tượng đơn hàng
     const recentOrder = {
-        maDonHang: "HD" + Math.floor(Math.random() * 1000000),  // Tạo mã đơn hàng ngẫu nhiên
-        khachHang: khachHang,  // Đảm bảo khachHang không null
-        phuongThucThanhToan: phuongThucThanhToan,  // Đảm bảo phương thức thanh toán có giá trị
-        voucher: voucher,  // Thêm voucher nếu có
-        loaiDonHang: true,  // Đặt loại đơn hàng là Online
-        tongTien: totalAmountAfterDiscount.value,  // Tổng tiền sau khi giảm giá
-        items: JSON.parse(JSON.stringify(gioHang.value)),  // Danh sách các sản phẩm trong giỏ hàng
-        discount: discountAmount.value,  // Giá trị giảm giá
-        chiPhiGiaoHang: shippingFee.value,  // Phí giao hàng (có thể được tính toán thêm)
-        trangThai: selectedPaymentMethod.value === 'bank-transfer' ? 'Đang chờ thanh toán' : 'Chờ xác nhận',  // Trạng thái đơn hàng
-        ngayTao: new Date().toISOString(),  // Ngày tạo đơn hàng
-        ngaySua: new Date().toISOString(),  // Ngày sửa đơn hàng
+        maDonHang: "HD" + Math.floor(Math.random() * 1000000),
+        khachHang: khachHang,  // 🔥 Đã sử dụng đúng ID khách hàng
+        phuongThucThanhToan: phuongThucThanhToan,
+        voucher: voucher,
+        loaiDonHang: true,
+        tongTien: totalAmountAfterDiscount.value,
+        items: JSON.parse(JSON.stringify(gioHang.value)),
+        discount: discountAmount.value,
+        chiPhiGiaoHang: shippingFee.value,
+        trangThai: selectedPaymentMethod.value === 'bank-transfer' ? 'Đang chờ thanh toán' : 'Chờ xác nhận',
+        ngayTao: new Date().toISOString(),
+        ngaySua: new Date().toISOString(),
     };
 
+    // Lưu vào localStorage
     localStorage.setItem("selectedVoucher", JSON.stringify(selectedVoucher.value));
     localStorage.setItem("discount", discountAmount.value);
     localStorage.setItem("shippingFee", shippingFee.value);
@@ -270,28 +286,27 @@ const handlePayment = async () => {
     localStorage.setItem("orders", JSON.stringify(savedOrders));
 
     try {
-        const order = {
-            ...recentOrder
-        }
+        const order = { ...recentOrder };
+        
         // Gửi yêu cầu lưu đơn hàng vào backend
         console.log("Dữ liệu gửi lên:", order);
         const response = await axios.post("http://localhost:8080/don-hang/create-online", order);
 
-        // localStorage.setItem("recentOrder", JSON.stringify(order)); 
-
         if (response.status === 200) {
             alert("Đơn hàng đã được lưu thành công!");
-
-            // Lưu đơn hàng vào localStorage hoặc trạng thái toàn cục
-            // localStorage.setItem("recentOrder", JSON.stringify(order));
+            localStorage.setItem("recentOrder", JSON.stringify(order));
 
             // Xử lý thanh toán thành công
-            // if (selectedPaymentMethod.value === 'cod') {
-            //     alert('Thanh toán khi nhận hàng thành công!');
-            //     router.push('/thanh-toan-thanh-cong');
-            // } else if (selectedPaymentMethod.value === 'bank-transfer') {
-            //     showImage.value = true; // Hiện mã QR để người dùng quét
-            // }
+            if (selectedPaymentMethod.value === 'cod') {
+                alert('Thanh toán khi nhận hàng thành công!');
+                router.push('/thanh-toan-thanh-cong');
+            } else if (selectedPaymentMethod.value === 'bank-transfer') {
+                showImage.value = true;
+            }
+
+            // Xóa giỏ hàng
+            localStorage.removeItem("gioHang");
+            gioHang.value = [];
         } else {
             alert("Đã xảy ra lỗi khi lưu đơn hàng!");
         }

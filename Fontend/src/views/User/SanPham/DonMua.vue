@@ -5,7 +5,11 @@
     </div>
   </div>
 
-  <div class="order-card" v-for="order in filteredOrders" :key="order.maDon">
+  <div v-if="filteredOrders.length === 0" class="no-orders">
+    Không có đơn hàng nào với trạng thái "{{ activeTab }}"
+  </div>
+
+  <div class="order-card" v-for="order in filteredOrders" :key="order.maDonHang">
     <div class="order-header">
       <div><strong>Mã đơn:</strong> {{ order.maDonHang }}</div>
       <div class="order-status">Trạng thái: {{ order.trangThai }}</div>
@@ -22,14 +26,14 @@
           Kích thước: {{ item.size.tenSize }} &nbsp;|&nbsp;
           Giá: {{ item.giaBan.toLocaleString() }} VNĐ
         </div>
-        <div>
-          Voucher: {{ voucher?.maVoucher }} - {{ voucher?.moTa }}
+        <div v-if="order.voucher">
+          Voucher: {{ order.voucher.maVoucher }} - {{ order.voucher.moTa }}
+        </div>
+        <div v-if="order.discount > 0">
+          Giảm giá: {{ order.discount.toLocaleString() }} VNĐ
         </div>
         <div>
-          Giảm giá: {{ discountAmount.toLocaleString() }} VNĐ
-        </div>
-        <div>
-          Phí vận chuyển: {{ shippingFee.toLocaleString() }} VNĐ
+          Phí vận chuyển: {{ (order.chiPhiGiaoHang || 0).toLocaleString() }} VNĐ
         </div>
       </div>
     </div>
@@ -37,7 +41,7 @@
     <div class="order-actions">
       <div><strong>Tổng tiền:</strong> {{ order.tongTien.toLocaleString() }} VNĐ</div>
       <div>
-        <button class="cancel-btn">HỦY ĐƠN</button>
+        <button class="cancel-btn" v-if="canCancelOrder(order.trangThai)">HỦY ĐƠN</button>
         <button class="view-btn">🛒 XEM ĐƠN HÀNG</button>
       </div>
     </div>
@@ -51,7 +55,7 @@ export default {
       activeTab: "Chờ xác nhận",
       tabs: [
         "Chờ xác nhận",
-        "Đã xác nhận",
+        "Đã xác nhận", 
         "Chờ giao hàng",
         "Đang vận chuyển",
         "Chờ thanh toán",
@@ -60,34 +64,66 @@ export default {
         "Đã hủy",
       ],
       orders: [], // Lưu thông tin đơn hàng
-      voucher: null, // Store voucher data
-      discountAmount: 0, // Store discount value
-      shippingFee: 0, // Store shipping fee
     };
   },
   computed: {
     filteredOrders() {
-      return this.orders.filter(order => order.trangThai === this.activeTab);
+      console.log('All orders:', this.orders); // Debug log
+      console.log('Active tab:', this.activeTab); // Debug log
+      const filtered = this.orders.filter(order => order.trangThai === this.activeTab);
+      console.log('Filtered orders:', filtered); // Debug log
+      return filtered;
     },
-    
   },
   methods: {
     loadOrderData() {
-      // Lấy thông tin đơn hàng từ localStorage khi component được mount
-      const recentOrder = JSON.parse(localStorage.getItem("recentOrder"));
-      if (recentOrder) {
-        this.orders.push(recentOrder);  // Thêm đơn hàng vào mảng orders
-        this.voucher = recentOrder.voucher || null; // Load voucher from the order
-        this.discountAmount = recentOrder.discount || 0;
-        this.shippingFee = recentOrder.chiPhiGiaoHang || 0; // Load shipping fee from the order
-      }
-      if (recentOrder.length) {
-        this.orders = recentOrder;  // Lưu tất cả các đơn hàng vào mảng orders
+      try {
+        const storedData = localStorage.getItem("recentOrder");
+        
+        if (!storedData) {
+          console.log('Không có dữ liệu đơn hàng trong localStorage');
+          return;
+        }
+
+        const recentOrder = JSON.parse(storedData);
+        console.log('Loaded data from localStorage:', recentOrder);
+
+        // Kiểm tra xem dữ liệu là array hay object
+        if (Array.isArray(recentOrder)) {
+          // Nếu là array, gán trực tiếp
+          this.orders = recentOrder;
+        } else if (recentOrder && typeof recentOrder === 'object') {
+          // Nếu là object đơn lẻ, chuyển thành array
+          this.orders = [recentOrder];
+        }
+
+        console.log('Orders after loading:', this.orders);
+        
+      } catch (error) {
+        console.error('Lỗi khi load dữ liệu đơn hàng:', error);
       }
     },
+
+    canCancelOrder(status) {
+      // Chỉ cho phép hủy đơn ở một số trạng thái nhất định
+      const cancelableStatuses = ['Chờ xác nhận', 'Chờ thanh toán'];
+      return cancelableStatuses.includes(status);
+    },
+
+    // Method để debug - có thể xóa sau khi fix xong
+    debugOrders() {
+      console.log('Current orders:', this.orders);
+      console.log('Active tab:', this.activeTab);
+      console.log('Filtered orders:', this.filteredOrders);
+    }
   },
   mounted() {
-    this.loadOrderData();  // Tải dữ liệu đơn hàng từ localStorage khi component được mount
+    this.loadOrderData();
+    
+    // Debug - có thể xóa sau
+    this.$nextTick(() => {
+      this.debugOrders();
+    });
   },
 };
 </script>
@@ -99,6 +135,7 @@ export default {
   margin-bottom: 16px;
   font-weight: bold;
   text-transform: uppercase;
+  flex-wrap: wrap;
 }
 
 .tab {
@@ -106,11 +143,19 @@ export default {
   padding: 8px 16px;
   border-bottom: 2px solid transparent;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .tab.active {
   color: #1976d2;
   border-color: #1976d2;
+}
+
+.no-orders {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
 }
 
 .order-card {
@@ -155,6 +200,7 @@ export default {
 .order-product-info {
   font-size: 15px;
   line-height: 1.6;
+  flex: 1;
 }
 
 .order-actions {
@@ -162,11 +208,11 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .order-actions button {
   padding: 10px 16px;
-  margin-left: 10px;
   font-weight: bold;
   border-radius: 6px;
   border: none;

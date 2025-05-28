@@ -17,7 +17,7 @@
 
         <!-- Tiêu đề -->
         <h2 class="text-success text-h5 font-weight-bold mb-4">
-          Thanh toán thành công!
+          Đặt hàng thành công!
         </h2>
 
         <!-- Nội dung chính -->
