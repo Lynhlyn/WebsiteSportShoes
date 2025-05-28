@@ -154,6 +154,7 @@ export default {
 
   methods: {
     updateGiaTriToiDa() {
+<<<<<<< HEAD
       const { giaTriGiam, giaTriToiThieu, loaiVoucher } = this.voucher;
 
       if (!giaTriToiThieu || !giaTriGiam) return;
@@ -166,6 +167,14 @@ export default {
           giaTriGiamNum = 100;
           this.voucher.giaTriGiam = 100;
         }
+=======
+      if (!this.voucher.giaTriToiThieu || !this.voucher.giaTriGiam) return;
+
+      const giaTriToiThieuNum = Number(this.voucher.giaTriToiThieu);
+      const giaTriGiamNum = Number(this.voucher.giaTriGiam);
+
+      if (this.voucher.loaiVoucher === 0) { // Giảm theo phần trăm
+>>>>>>> d1aef8dec59f0398755aefada43b085cb54059f1
         this.voucher.giaTriToiDa = (giaTriToiThieuNum * giaTriGiamNum / 100).toFixed(2);
       } else {
         this.voucher.giaTriToiDa = giaTriGiamNum;
@@ -220,6 +229,7 @@ export default {
       return true;
     },
 
+<<<<<<< HEAD
 
     // updateGiaTriToiDa() {
     //   if (!this.voucher.giaTriToiThieu || !this.voucher.giaTriGiam) return;
@@ -227,6 +237,14 @@ export default {
     //   const giaTriToiThieuNum = Number(this.voucher.giaTriToiThieu);
     //   const giaTriGiamNum = Number(this.voucher.giaTriGiam);
 
+=======
+    // updateGiaTriToiDa() {
+    //   if (!this.voucher.giaTriToiThieu || !this.voucher.giaTriGiam) return;
+
+    //   const giaTriToiThieuNum = Number(this.voucher.giaTriToiThieu);
+    //   const giaTriGiamNum = Number(this.voucher.giaTriGiam);
+
+>>>>>>> d1aef8dec59f0398755aefada43b085cb54059f1
     //   if (this.voucher.loaiVoucher === 2) { // Giảm theo phần trăm
     //     this.voucher.giaTriToiDa = (giaTriToiThieuNum * (giaTriGiamNum / 100)).toFixed(2);
     //   } else {
